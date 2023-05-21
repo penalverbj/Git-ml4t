@@ -130,8 +130,8 @@ def experiment_1_1():
         data[i] = betting_episode()[1]
     for d in data:
         plt.plot(d, label="Test")
-    plt.title("Figure 1: Results over 10 episodes with infinite bankroll")
-    plt.xlabel("Episode")
+    plt.title("Figure 1: Results over 10 episodes of 1000 spins with infinite bankroll")
+    plt.xlabel("Spin")
     plt.ylabel("Winning")
     plt.xlim(0,300)
     plt.ylim(-256, 100)
