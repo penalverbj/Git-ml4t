@@ -33,7 +33,8 @@ import numpy as np
   		  	   		  		 			  		 			 	 	 		 		 	
 import matplotlib.pyplot as plt  		  	   		  		 			  		 			 	 	 		 		 	
 import pandas as pd  		  	   		  		 			  		 			 	 	 		 		 	
-from util import get_data, plot_data  		  	   		  		 			  		 			 	 	 		 		 	
+from util import get_data, plot_data
+from scipy import optimize as spo
   		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
 # This is the function that will be tested by the autograder  		  	   		  		 			  		 			 	 	 		 		 	
@@ -68,21 +69,26 @@ def optimize_portfolio(
   		  	   		  		 			  		 			 	 	 		 		 	
     # Read in adjusted closing prices for given symbols, date range  		  	   		  		 			  		 			 	 	 		 		 	
     dates = pd.date_range(sd, ed)  		  	   		  		 			  		 			 	 	 		 		 	
-    prices_all = get_data(syms, dates)  # automatically adds SPY  		  	   		  		 			  		 			 	 	 		 		 	
+    prices_all = get_data(syms, dates)  # automatically adds SPY
+    prices_all.fillna(method='ffill', inplace=True)
+    prices_all.fillna(method='bfill', inplace=True)
     prices = prices_all[syms]  # only portfolio symbols  		  	   		  		 			  		 			 	 	 		 		 	
-    prices_SPY = prices_all["SPY"]  # only SPY, for comparison later  		  	   		  		 			  		 			 	 	 		 		 	
-  		  	   		  		 			  		 			 	 	 		 		 	
+    prices_SPY = prices_all["SPY"]  # only SPY, for comparison later
+    print('\n')
+
     # find the allocations for the optimal portfolio  		  	   		  		 			  		 			 	 	 		 		 	
-    # note that the values here ARE NOT meant to be correct for a test case  		  	   		  		 			  		 			 	 	 		 		 	
-    allocs = np.asarray(  		  	   		  		 			  		 			 	 	 		 		 	
-        [0.2, 0.2, 0.3, 0.3]  		  	   		  		 			  		 			 	 	 		 		 	
-    )  # add code here to find the allocations  		  	   		  		 			  		 			 	 	 		 		 	
-    cr, adr, sddr, sr = [  		  	   		  		 			  		 			 	 	 		 		 	
-        0.25,  		  	   		  		 			  		 			 	 	 		 		 	
-        0.001,  		  	   		  		 			  		 			 	 	 		 		 	
-        0.0005,  		  	   		  		 			  		 			 	 	 		 		 	
-        2.1,  		  	   		  		 			  		 			 	 	 		 		 	
-    ]  # add code here to compute stats  		  	   		  		 			  		 			 	 	 		 		 	
+    # note that the values here ARE NOT meant to be correct for a test case
+    num_syms = len(syms)
+    allocs_guess = np.zeros(num_syms)# add code here to find the allocations
+    allocs_guess.fill(1.0/num_syms)
+
+    cons = ({'type': 'eq', 'fun': lambda x: 1 - sum(x)})
+    bounds = tuple((0, 1) for x in allocs_guess)
+
+    allocs = spo.minimize(sharpe_func, allocs_guess, args=prices, bounds=bounds, constraints=cons,
+                          options={"disp": "TRUE"})
+    # print(f'ALLOCS: {allocs.values()}')
+    port_val, cr, adr, sddr, sr = get_portfolio_stats(allocs.x, prices)
   		  	   		  		 			  		 			 	 	 		 		 	
     # Get daily portfolio value  		  	   		  		 			  		 			 	 	 		 		 	
     port_val = prices_SPY  # add code here to compute daily portfolio values  		  	   		  		 			  		 			 	 	 		 		 	
@@ -95,8 +101,28 @@ def optimize_portfolio(
         )  		  	   		  		 			  		 			 	 	 		 		 	
         pass  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
-    return allocs, cr, adr, sddr, sr  		  	   		  		 			  		 			 	 	 		 		 	
-  		  	   		  		 			  		 			 	 	 		 		 	
+    return allocs, cr, adr, sddr, sr
+
+def sharpe_func(X, prices):
+    return get_portfolio_stats(X, prices)[4] * -1
+
+def get_portfolio_stats(allocs, prices):
+    normed_prices = prices / prices.iloc[0, :]
+    alloced_prices = normed_prices * allocs
+    port_val = alloced_prices.sum(axis=1)
+
+    daily_returns = (port_val[1:].values / port_val[:-1]) - 1
+    daily_returns = daily_returns[1:]
+
+    cr = port_val[-1] / port_val[0] - 1
+
+    adr = daily_returns.mean()
+
+    sddr = daily_returns.std()
+
+    sr = np.sqrt(252) * adr / sddr
+
+    return port_val, cr, adr, sddr, sr
   		  	   		  		 			  		 			 	 	 		 		 	
 def test_code():  		  	   		  		 			  		 			 	 	 		 		 	
     """  		  	   		  		 			  		 			 	 	 		 		 	
@@ -105,12 +131,11 @@ def test_code():
   		  	   		  		 			  		 			 	 	 		 		 	
     start_date = dt.datetime(2009, 1, 1)  		  	   		  		 			  		 			 	 	 		 		 	
     end_date = dt.datetime(2010, 1, 1)  		  	   		  		 			  		 			 	 	 		 		 	
-    symbols = ["GOOG", "AAPL", "GLD", "XOM", "IBM"]  		  	   		  		 			  		 			 	 	 		 		 	
-  		  	   		  		 			  		 			 	 	 		 		 	
-    # Assess the portfolio  		  	   		  		 			  		 			 	 	 		 		 	
-    allocations, cr, adr, sddr, sr = optimize_portfolio(  		  	   		  		 			  		 			 	 	 		 		 	
-        sd=start_date, ed=end_date, syms=symbols, gen_plot=False  		  	   		  		 			  		 			 	 	 		 		 	
-    )  		  	   		  		 			  		 			 	 	 		 		 	
+    symbols = ["GOOG", "AAPL", "GLD", "XOM", "IBM"]
+    # Assess the portfolio
+    allocations, cr, adr, sddr, sr = optimize_portfolio(
+        sd=start_date, ed=end_date, syms=symbols, gen_plot=False
+    )
   		  	   		  		 			  		 			 	 	 		 		 	
     # Print statistics  		  	   		  		 			  		 			 	 	 		 		 	
     print(f"Start Date: {start_date}")  		  	   		  		 			  		 			 	 	 		 		 	
