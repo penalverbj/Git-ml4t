@@ -83,11 +83,11 @@ def optimize_portfolio(
     allocs_guess.fill(1.0/num_syms)
 
     cons = ({'type': 'eq', 'fun': lambda x: 1 - sum(x)})
-    bounds = tuple((0, 1) for x in allocs_guess)
+    bounds = tuple((0, 1) for ag in allocs_guess)
 
     allocs = spo.minimize(sharpe_func, allocs_guess, args=prices, bounds=bounds, constraints=cons,
                           options={"disp": "TRUE"})
-    # print(f'ALLOCS: {allocs.values()}')
+    print(f'sum: {np.sum(allocs.x)}')
     port_val, cr, adr, sddr, sr = get_portfolio_stats(allocs.x, prices)
   		  	   		  		 			  		 			 	 	 		 		 	
     # Get daily portfolio value  		  	   		  		 			  		 			 	 	 		 		 	
@@ -99,7 +99,7 @@ def optimize_portfolio(
         df_temp = pd.concat(  		  	   		  		 			  		 			 	 	 		 		 	
             [port_val, prices_SPY], keys=["Portfolio", "SPY"], axis=1  		  	   		  		 			  		 			 	 	 		 		 	
         )  		  	   		  		 			  		 			 	 	 		 		 	
-        pass  		  	   		  		 			  		 			 	 	 		 		 	
+        pass
   		  	   		  		 			  		 			 	 	 		 		 	
     return allocs, cr, adr, sddr, sr
 
@@ -107,19 +107,16 @@ def sharpe_func(X, prices):
     return get_portfolio_stats(X, prices)[4] * -1
 
 def get_portfolio_stats(allocs, prices):
-    normed_prices = prices / prices.iloc[0, :]
+    normed_prices = prices / prices.iloc[0]
     alloced_prices = normed_prices * allocs
     port_val = alloced_prices.sum(axis=1)
 
-    daily_returns = (port_val[1:].values / port_val[:-1]) - 1
+    daily_returns = (port_val.iloc[1:].values / port_val.iloc[:-1]) - 1
     daily_returns = daily_returns[1:]
 
     cr = port_val[-1] / port_val[0] - 1
-
     adr = daily_returns.mean()
-
     sddr = daily_returns.std()
-
     sr = np.sqrt(252) * adr / sddr
 
     return port_val, cr, adr, sddr, sr
@@ -129,8 +126,8 @@ def test_code():
     This function WILL NOT be called by the auto grader.  		  	   		  		 			  		 			 	 	 		 		 	
     """  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
-    start_date = dt.datetime(2009, 1, 1)  		  	   		  		 			  		 			 	 	 		 		 	
-    end_date = dt.datetime(2010, 1, 1)  		  	   		  		 			  		 			 	 	 		 		 	
+    start_date = dt.datetime(2009, 1, 1)
+    end_date = dt.datetime(2015, 1, 1)
     symbols = ["GOOG", "AAPL", "GLD", "XOM", "IBM"]
     # Assess the portfolio
     allocations, cr, adr, sddr, sr = optimize_portfolio(
