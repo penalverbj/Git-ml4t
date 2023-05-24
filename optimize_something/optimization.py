@@ -75,7 +75,6 @@ def optimize_portfolio(
     prices = prices_all[syms]  # only portfolio symbols  		  	   		  		 			  		 			 	 	 		 		 	
     prices_SPY = prices_all["SPY"]  # only SPY, for comparison later
     SPY_norm = prices_SPY / prices_SPY.iloc[0]
-    print('\n')
 
     # find the allocations for the optimal portfolio  		  	   		  		 			  		 			 	 	 		 		 	
     # note that the values here ARE NOT meant to be correct for a test case
@@ -88,7 +87,6 @@ def optimize_portfolio(
 
     allocs = spo.minimize(sharpe_func, allocs_guess, args=prices, bounds=bounds, constraints=cons,
                           options={"disp": "TRUE"})
-    print(f'sum: {np.sum(allocs.x)}')
     port_val, cr, adr, sddr, sr = get_portfolio_stats(allocs.x, prices)
   		  	   		  		 			  		 			 	 	 		 		 	
     if gen_plot:
@@ -100,12 +98,12 @@ def optimize_portfolio(
         plt.plot(SPY_norm, label="SPY")
         plt.legend(loc="best")
         plt.title("Daily Portfolio Value VS. SPY")
-        plt.ylabel("Price")
+        plt.ylabel("Normalized Price")
         plt.xlabel("Date")
         plt.grid(linestyle="--")
         plt.savefig("Figure1.png")
   		  	   		  		 			  		 			 	 	 		 		 	
-    return allocs, cr, adr, sddr, sr
+    return allocs.x, cr, adr, sddr, sr
 
 def sharpe_func(X, prices):
     return get_portfolio_stats(X, prices)[4] * -1
@@ -118,10 +116,10 @@ def get_portfolio_stats(allocs, prices):
     daily_returns = (port_val.iloc[1:].values / port_val.iloc[:-1]) - 1
     daily_returns = daily_returns[1:]
 
-    cr = port_val[-1] / port_val[0] - 1
+    cr = (port_val.iloc[-1] / port_val.iloc[0]) - 1
     adr = daily_returns.mean()
     sddr = daily_returns.std()
-    sr = np.sqrt(252) * adr / sddr
+    sr = np.sqrt(252) * (adr / sddr)
 
     return port_val, cr, adr, sddr, sr
   		  	   		  		 			  		 			 	 	 		 		 	
@@ -137,11 +135,25 @@ def test_code():
     allocations, cr, adr, sddr, sr = optimize_portfolio(
         sd=start_date, ed=end_date, syms=symbols, gen_plot=True
     )
+
+    # start_date = dt.datetime(2010, 6, 1)
+    # end_date = dt.datetime(2010, 12, 31)
+    # symbols = ['GOOG', 'AAPL', 'GLD', 'XOM']
+    # dates = pd.date_range(start_date, end_date)
+    # prices_all = get_data(symbols, dates)  # automatically adds SPY
+    # prices_all.fillna(method='ffill', inplace=True)
+    # prices_all.fillna(method='bfill', inplace=True)
+    # prices = prices_all[syms]  # only portfolio symbols
+    # allocations = [0.2, 0.3, 0.4, 0.1]
+    # _, cr, adr, sddr, sr = get_portfolio_stats(
+    #     allocs=allocations, prices=prices
+    # )
   		  	   		  		 			  		 			 	 	 		 		 	
-    # Print statistics  		  	   		  		 			  		 			 	 	 		 		 	
-    print(f"Start Date: {start_date}")  		  	   		  		 			  		 			 	 	 		 		 	
-    print(f"End Date: {end_date}")  		  	   		  		 			  		 			 	 	 		 		 	
-    print(f"Symbols: {symbols}")  		  	   		  		 			  		 			 	 	 		 		 	
+    # Print statistics
+    print('\n')
+    print(f"Start Date: {start_date}")
+    print(f"End Date: {end_date}")
+    print(f"Symbols: {symbols}")
     print(f"Allocations:{allocations}")  		  	   		  		 			  		 			 	 	 		 		 	
     print(f"Sharpe Ratio: {sr}")  		  	   		  		 			  		 			 	 	 		 		 	
     print(f"Volatility (stdev of daily returns): {sddr}")  		  	   		  		 			  		 			 	 	 		 		 	
