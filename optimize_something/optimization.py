@@ -103,7 +103,6 @@ def optimize_portfolio(
         plt.ylabel("Price")
         plt.xlabel("Date")
         plt.grid(linestyle="--")
-        # plt.show()
         plt.savefig("Figure1.png")
   		  	   		  		 			  		 			 	 	 		 		 	
     return allocs, cr, adr, sddr, sr

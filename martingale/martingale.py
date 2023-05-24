@@ -125,7 +125,6 @@ def betting_episode_2():
     return (winnings, winnings_array)
 
 def experiment_1_1():
-    print('FIGURE 1')
     data = np.zeros((10, 1000))
     win_count = 0
     loss_count = 0
@@ -137,8 +136,6 @@ def experiment_1_1():
         elif -256 in d:
             loss_count = loss_count + 1
         plt.plot(d, label="Test")
-    print(f'Wins: {win_count} \n')
-    print(f'Losses: {loss_count} \n')
     plt.title("Figure 1: Results over 10 episodes of 1000 spins with infinite bankroll")
     plt.xlabel("Spin")
     plt.ylabel("Winning")
@@ -151,7 +148,6 @@ def experiment_1_1():
     plt.clf()
 
 def experiment_1_2and3():
-    print("FIGURES 2 AND 3")
     data = np.zeros((1000, 1000))
     win_count = 0
     loss_count = 0
@@ -162,8 +158,6 @@ def experiment_1_2and3():
             win_count = win_count + 1
         elif -256 in d:
             loss_count = loss_count + 1
-    print(f'Wins: {win_count} \n')
-    print(f'Losses: {loss_count} \n')
     means = np.mean(data, axis=0)
     std = np.std(data, axis=0)
     bolinger1 = means - std
@@ -199,7 +193,6 @@ def experiment_1_2and3():
     plt.clf()
 
 def experiment_1_4and5():
-    print('FIGURES 4 AND 5')
     data = np.zeros((1000, 1000))
     for i in range(1000):
         data[i] = betting_episode_2()[1]
@@ -210,8 +203,6 @@ def experiment_1_4and5():
             win_count = win_count + 1
         elif -256 in d:
             loss_count = loss_count + 1
-    print(f'Wins: {win_count} \n')
-    print(f'Losses: {loss_count} \n')
     means = np.mean(data, axis=0)
     std = np.std(data, axis=0)
     bolinger1 = means - std
@@ -252,8 +243,7 @@ def test_code():
     """  		  	   		  		 			  		 			 	 	 		 		 	
     win_prob = 0.60  # set appropriately to the probability of a win  		  	   		  		 			  		 			 	 	 		 		 	
     np.random.seed(gtid())  # do this only once
-    print("\n")
-    print(get_spin_result(.6))  # test the roulette spin
+    # print(get_spin_result(win_prob))  # test the roulette spin
     # add your code here to implement the experiments
     #code was added above as individual methods
     experiment_1_1()
