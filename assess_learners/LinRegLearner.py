@@ -34,18 +34,18 @@ class LinRegLearner(object):
         If verbose = False your code should not generate ANY output. When we test your code, verbose will be False.  		  	   		  		 			  		 			 	 	 		 		 	
     :type verbose: bool  		  	   		  		 			  		 			 	 	 		 		 	
     """  		  	   		  		 			  		 			 	 	 		 		 	
-    def __init__(self, verbose=False):  		  	   		  		 			  		 			 	 	 		 		 	
+    def __init__(self, verbose=False):
         """  		  	   		  		 			  		 			 	 	 		 		 	
         Constructor method  		  	   		  		 			  		 			 	 	 		 		 	
         """  		  	   		  		 			  		 			 	 	 		 		 	
-        pass  # move along, these aren't the drones you're looking for  		  	   		  		 			  		 			 	 	 		 		 	
+        pass  # move along, these aren't the drones you're looking for
   		  	   		  		 			  		 			 	 	 		 		 	
     def author(self):  		  	   		  		 			  		 			 	 	 		 		 	
         """  		  	   		  		 			  		 			 	 	 		 		 	
         :return: The GT username of the student  		  	   		  		 			  		 			 	 	 		 		 	
         :rtype: str  		  	   		  		 			  		 			 	 	 		 		 	
         """  		  	   		  		 			  		 			 	 	 		 		 	
-        return "tb34"  # replace tb34 with your Georgia Tech username  		  	   		  		 			  		 			 	 	 		 		 	
+        return "jpb6"  #replace tb34 with your Georgia Tech username
   		  	   		  		 			  		 			 	 	 		 		 	
     def add_evidence(self, data_x, data_y):  		  	   		  		 			  		 			 	 	 		 		 	
         """  		  	   		  		 			  		 			 	 	 		 		 	
@@ -58,8 +58,8 @@ class LinRegLearner(object):
         """  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
         # slap on 1s column so linear regression finds a constant term  		  	   		  		 			  		 			 	 	 		 		 	
-        new_data_x = np.ones([data_x.shape[0], data_x.shape[1] + 1])  		  	   		  		 			  		 			 	 	 		 		 	
-        new_data_x[:, 0 : data_x.shape[1]] = data_x  		  	   		  		 			  		 			 	 	 		 		 	
+        new_data_x = np.ones([data_x.shape[0], data_x.shape[1] + 1])
+        new_data_x[:, 0 : data_x.shape[1]] = data_x
   		  	   		  		 			  		 			 	 	 		 		 	
         # build and save the model  		  	   		  		 			  		 			 	 	 		 		 	
         self.model_coefs, residuals, rank, s = np.linalg.lstsq(  		  	   		  		 			  		 			 	 	 		 		 	

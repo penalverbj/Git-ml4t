@@ -28,30 +28,43 @@ import sys
   		  	   		  		 			  		 			 	 	 		 		 	
 import numpy as np  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
-import LinRegLearner as lrl  		  	   		  		 			  		 			 	 	 		 		 	
-  		  	   		  		 			  		 			 	 	 		 		 	
+import LinRegLearner as lrl
+import DTLearner as dt
+
+def DTTest(train_x, train_y, test_x, test_y):
+    learner = dt.DTLearner()
+    learner.add_evidence(train_x, train_y)
+    pred_y = learner.query(train_x)
+    return pred_y
+
 if __name__ == "__main__":  		  	   		  		 			  		 			 	 	 		 		 	
     if len(sys.argv) != 2:  		  	   		  		 			  		 			 	 	 		 		 	
         print("Usage: python testlearner.py <filename>")  		  	   		  		 			  		 			 	 	 		 		 	
         sys.exit(1)  		  	   		  		 			  		 			 	 	 		 		 	
     inf = open(sys.argv[1])  		  	   		  		 			  		 			 	 	 		 		 	
     data = np.array(  		  	   		  		 			  		 			 	 	 		 		 	
-        [list(map(float, s.strip().split(","))) for s in inf.readlines()]  		  	   		  		 			  		 			 	 	 		 		 	
-    )  		  	   		  		 			  		 			 	 	 		 		 	
+        [list(map(str,s.strip().split(","))) for s in inf.readlines()]
+    )
+    if sys.argv[1] == "Data/Istanbul.csv":
+        data = data[1:, 1:]
+    data = data.astype('float')
   		  	   		  		 			  		 			 	 	 		 		 	
     # compute how much of the data is training and testing  		  	   		  		 			  		 			 	 	 		 		 	
     train_rows = int(0.6 * data.shape[0])  		  	   		  		 			  		 			 	 	 		 		 	
     test_rows = data.shape[0] - train_rows  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
     # separate out training and testing data  		  	   		  		 			  		 			 	 	 		 		 	
-    train_x = data[:train_rows, 0:-1]  		  	   		  		 			  		 			 	 	 		 		 	
+    train_x = data[:train_rows, 0:-1]
     train_y = data[:train_rows, -1]  		  	   		  		 			  		 			 	 	 		 		 	
     test_x = data[train_rows:, 0:-1]  		  	   		  		 			  		 			 	 	 		 		 	
     test_y = data[train_rows:, -1]  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
     print(f"{test_x.shape}")  		  	   		  		 			  		 			 	 	 		 		 	
     print(f"{test_y.shape}")  		  	   		  		 			  		 			 	 	 		 		 	
-  		  	   		  		 			  		 			 	 	 		 		 	
+
+    temp = DTTest(train_x,train_y, test_x, test_y)
+    print(temp)
+
     # create a learner and train it  		  	   		  		 			  		 			 	 	 		 		 	
     learner = lrl.LinRegLearner(verbose=True)  # create a LinRegLearner  		  	   		  		 			  		 			 	 	 		 		 	
     learner.add_evidence(train_x, train_y)  # train it  		  	   		  		 			  		 			 	 	 		 		 	
