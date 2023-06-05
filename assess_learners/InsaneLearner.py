@@ -13,15 +13,12 @@ class InsaneLearner(object):
     def author(self):
         return 'jpb6'  # replace tb34 with your Georgia Tech username
 
-    def addEvidence(self, data_x, data_y):
+    def add_evidence(self, data_x, data_y):
         for learner in self.learner_list:
             learner.add_evidence(data_x, data_y)
 
     def query(self, points):
-        temp = np.empty(len(self.learner_list))
-        i = 0
+        temp = []
         for l in self.learner_list:
-            temp[i] = l.query(points)
-            i += 1
-        out = np.mean(temp, axis=0)
-        return out
+            temp.append(l.query(points))
+        return np.mean(temp, axis=0)
