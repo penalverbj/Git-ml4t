@@ -127,49 +127,169 @@ def BagTest(train_x, train_y, test_x, test_y):
 
 
 def experiment1(train_x, train_y, test_x, test_y):
-    in_sample_rsmes = []
-    out_sample_rsmes = []
+    train_rmses = []
+    test_rmses = []
     for leaf in range(1, 101):
         learner = dt.DTLearner(leaf_size=leaf)
         learner.add_evidence(train_x, train_y)
-        print("learner made")
-        # in sample
-        # in_predY = learner.query(train_x)
-        # in_rmse = math.sqrt(((train_y - in_predY) ** 2).sum() / train_y.shape[0])
-        # print(in_rmse)
-        # out sample
-        # out_predY = learner.query(test_x)
-        # out_rmse = math.sqrt(((test_y - out_predY) ** 2).sum() / test_y.shape[0])
-        #
-        # in_sample_rsmes.append(in_rmse)
-        # out_sample_rsmes.append(out_rmse)
 
-    # xi = range(1, 101)
-    # plt.plot(xi, in_sample_rsmes, label="in sample")
-    # plt.plot(xi, out_sample_rsmes, label="out sample")
-    #
-    # plt.title("Figure 1 - Leaf Size and Overfitting in DT")
-    # plt.xlabel("Leaf Size")
-    # plt.ylabel("RMSE")
-    # plt.xticks(np.insert(np.arange(5, 101, step=5), 0, 1))
-    # plt.grid()
-    # plt.legend()
-    # plt.savefig("figure1.png")
-    # plt.clf()
-    #
-    # xi = range(1, 21)
-    # plt.plot(xi, in_sample_rsmes[:20], label="in sample")
-    # plt.plot(xi, out_sample_rsmes[:20], label="out sample")
-    #
-    # plt.title("Figure 2 - Leaf Size and Overfitting in DT (Zoomed In)")
-    # plt.xlabel("Leaf Size")
-    # plt.ylabel("RMSE")
-    # plt.xticks(np.insert(np.arange(5, 21, step=5), 0, 1))
-    # plt.grid()
-    # plt.legend()
-    # plt.savefig("figure2.png")
-    # plt.clf()
+        train_pred_y = learner.query(train_x)
+        train_rmse = math.sqrt(((train_y - train_pred_y) ** 2).sum() / train_y.shape[0])
+        test_pred_y = learner.query(test_x)
+        test_rmse = math.sqrt(((test_y - test_pred_y) ** 2).sum() / test_y.shape[0])
 
+        train_rmses.append(train_rmse)
+        test_rmses.append(test_rmse)
+
+    ticks = range(1, 101)
+    plt.plot(ticks, train_rmses, label="training sample")
+    plt.plot(ticks, test_rmses, label="testing sample")
+    plt.title("Leaf Size vs RMSE with DT")
+    plt.xlabel("Leaf Size")
+    plt.ylabel("RMSE")
+    plt.grid(linestyle="--")
+    plt.legend(loc="best")
+    plt.savefig("Figure1.png")
+    plt.clf()
+
+
+def experiment2(train_x, train_y, test_x, test_y):
+    train_rmses = []
+    test_rmses = []
+    for leaf in range(1, 101):
+        learner = bg.BagLearner(learner=dt.DTLearner, kwargs={"leaf_size": leaf}, bags=20)
+        learner.add_evidence(train_x, train_y)
+
+        train_pred_y = learner.query(train_x)
+        train_rmse = math.sqrt(((train_y - train_pred_y) ** 2).sum() / train_y.shape[0])
+        test_train_y = learner.query(test_x)
+        test_rmse = math.sqrt(((test_y - test_train_y) ** 2).sum() / test_y.shape[0])
+
+        train_rmses.append(train_rmse)
+        test_rmses.append(test_rmse)
+
+    ticks = range(1, 101)
+    plt.plot(ticks, train_rmses, label="in sample")
+    plt.plot(ticks, test_rmses, label="out sample")
+    plt.title("Leaf Size vs RMSE with BagLearner with 20 bags using DT")
+    plt.xlabel("Leaf Size")
+    plt.ylabel("RMSE")
+    plt.grid(linestyle="--")
+    plt.legend(loc="best")
+    plt.savefig("Figure2.png")
+    plt.clf()
+
+    train_rmses = []
+    test_rmses = []
+    for leaf in range(1, 101):
+        learner = bg.BagLearner(learner=dt.DTLearner, kwargs={"leaf_size": leaf}, bags=40)
+        learner.add_evidence(train_x, train_y)
+
+        train_pred_y = learner.query(train_x)
+        train_rmse = math.sqrt(((train_y - train_pred_y) ** 2).sum() / train_y.shape[0])
+        test_train_y = learner.query(test_x)
+        test_rmse = math.sqrt(((test_y - test_train_y) ** 2).sum() / test_y.shape[0])
+
+        train_rmses.append(train_rmse)
+        test_rmses.append(test_rmse)
+
+    ticks = range(1, 101)
+    plt.plot(ticks, train_rmses, label="in sample")
+    plt.plot(ticks, test_rmses, label="out sample")
+    plt.title("Leaf Size vs RMSE with BagLearner with 40 bags using DT")
+    plt.xlabel("Leaf Size")
+    plt.ylabel("RMSE")
+    plt.grid(linestyle="--")
+    plt.legend(loc="best")
+    plt.savefig("Figure3.png")
+    plt.clf()
+
+def experiment3_1(train_x, train_y, test_x, test_y):
+    # Mean Absolute Error = sum(predictions - trueVal) / numDataPoints
+    train_DT= []
+    test_DT = []
+    train_RT = []
+    test_RT = []
+    for leaf in range(1, 101):
+        DT = dt.DTLearner(leaf_size=leaf)
+        RT = rt.RTLearner(leaf_size=leaf)
+        DT.add_evidence(train_x, train_y)
+        RT.add_evidence(train_x, train_y)
+
+        train_pred_y_DT = DT.query(train_x)
+        train_pred_y_RT = RT.query(train_x)
+        train_dt_mae = (train_pred_y_DT - train_y).sum() / train_y.shape[0]
+        train_rt_mae = (train_pred_y_RT - train_y).sum() / train_y.shape[0]
+        train_DT.append(train_dt_mae)
+        train_RT.append(train_rt_mae)
+
+        test_pred_y_DT = DT.query(test_x)
+        test_pred_y_RT = RT.query(test_x)
+        test_dt_mae = (test_pred_y_DT - test_y).sum() / test_y.shape[0]
+        test_rt_mae = (test_pred_y_RT - test_y).sum() / test_y.shape[0]
+        test_DT.append(test_dt_mae)
+        test_RT.append(test_rt_mae)
+
+    ticks = range(1, 101)
+    plt.plot(ticks, train_DT, label="training sample DT")
+    plt.plot(ticks, train_RT, label="training sample RT")
+    plt.title("Leaf Size vs MAE with DT and RT (Training)")
+    plt.xlabel("Leaf Size")
+    plt.ylabel("MAE")
+    plt.grid(linestyle="--")
+    plt.legend(loc="best")
+    plt.savefig("Figure4.png")
+    plt.clf()
+
+    ticks = range(1, 101)
+    plt.plot(ticks, test_DT, label="testing sample DT")
+    plt.plot(ticks, test_RT, label="testing sample RT")
+    plt.title("Leaf Size vs MAE with DT and RT (Testing)")
+    plt.xlabel("Leaf Size")
+    plt.ylabel("MAE")
+    plt.grid(linestyle="--")
+    plt.legend(loc="best")
+    plt.savefig("Figure5.png")
+    plt.clf()
+
+def experiment3_2(train_x, train_y, test_x, test_y):
+    #mean absolute percentage error = mean(abs(true - pred) / true) * 100
+    train_DT= []
+    test_DT = []
+    train_RT = []
+    test_RT = []
+    for leaf in range(1, 101):
+        DT = dt.DTLearner(leaf_size=leaf)
+        RT = rt.RTLearner(leaf_size=leaf)
+        DT.add_evidence(train_x, train_y)
+        RT.add_evidence(train_x, train_y)
+
+        train_pred_y_DT = DT.query(train_x)
+        train_pred_y_RT = RT.query(train_x)
+        train_dt_mape = np.mean(np.abs(train_y - train_pred_y_DT) / train_y) * 100
+        train_rt_mape = np.mean(np.abs(train_y - train_pred_y_RT) / train_y) * 100
+        train_DT.append(train_dt_mape)
+        train_RT.append(train_rt_mape)
+
+        test_pred_y_DT = DT.query(test_x)
+        test_pred_y_RT = RT.query(test_x)
+        test_dt_mape = np.mean(np.abs(test_y - test_pred_y_DT) / test_y) * 100
+        test_rt_mape = np.mean(np.abs(test_y - test_pred_y_RT) / test_y) * 100
+        test_DT.append(test_dt_mape)
+        test_RT.append(test_rt_mape)
+
+    ticks = range(1, 101)
+    plt.plot(ticks, train_DT, label="training sample DT")
+    plt.plot(ticks, test_DT, label="testing sample DT")
+    plt.plot(ticks, train_RT, label="training sample RT")
+    plt.plot(ticks, test_RT, label="testing sample RT")
+    plt.title("Leaf Size vs MAPE comparing DT and RT")
+    plt.xlabel("Leaf Size")
+    plt.ylabel("MAPE (%)")
+    plt.grid(linestyle="--")
+    plt.legend(loc="best")
+    plt.savefig("Figure6.png")
+    plt.clf()
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -179,6 +299,7 @@ if __name__ == "__main__":
     data = np.array(
         [list(map(str, s.strip().split(","))) for s in inf.readlines()]
     )
+    # only Istanbul.csv has dates, so this checks for it and removes them
     if sys.argv[1] == "Data/Istanbul.csv":
         data = data[1:, 1:]
     data = data.astype('float')
@@ -192,5 +313,9 @@ if __name__ == "__main__":
     train_y = data[:train_rows, -1]
     test_x = data[train_rows:, 0:-1]
     test_y = data[train_rows:, -1]
+    # section above this comment within main() came with the project
 
     experiment1(train_x, train_y, test_x, test_y)
+    experiment2(train_x, train_y, test_x, test_y)
+    experiment3_1(train_x, train_y, test_x, test_y)
+    experiment3_2(train_x, train_y, test_x, test_y)
