@@ -18,7 +18,6 @@ class BagLearner(object):
         return 'jpb6'
 
     def add_evidence(self, data_x, data_y):
-
         for l in self.learner_list:
             i = np.random.choice(range(data_x.shape[0]), data_x.shape[0], replace=True)
             x = data_x[i]

@@ -303,6 +303,8 @@ if __name__ == "__main__":
     if sys.argv[1] == "Data/Istanbul.csv":
         data = data[1:, 1:]
     data = data.astype('float')
+    np.random.seed(903376324)  # this is my GTID
+    np.random.shuffle(data)  # shuffles whole dataset
 
     # compute how much of the data is training and testing  		  	   		  		 			  		 			 	 	 		 		 	
     train_rows = int(0.6 * data.shape[0])
@@ -313,7 +315,7 @@ if __name__ == "__main__":
     train_y = data[:train_rows, -1]
     test_x = data[train_rows:, 0:-1]
     test_y = data[train_rows:, -1]
-    # section above this comment within main() came with the project
+    # most of the section above this comment within main() came with the project
 
     experiment1(train_x, train_y, test_x, test_y)
     experiment2(train_x, train_y, test_x, test_y)
