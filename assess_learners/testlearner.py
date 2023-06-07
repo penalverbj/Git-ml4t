@@ -218,15 +218,15 @@ def experiment3_1(train_x, train_y, test_x, test_y):
 
         train_pred_y_DT = DT.query(train_x)
         train_pred_y_RT = RT.query(train_x)
-        train_dt_mae = (train_pred_y_DT - train_y).sum() / train_y.shape[0]
-        train_rt_mae = (train_pred_y_RT - train_y).sum() / train_y.shape[0]
+        train_dt_mae = np.sum(np.abs(train_pred_y_DT - train_y)) / train_y.shape[0]
+        train_rt_mae = np.sum(np.abs(train_pred_y_RT - train_y)) / train_y.shape[0]
         train_DT.append(train_dt_mae)
         train_RT.append(train_rt_mae)
 
         test_pred_y_DT = DT.query(test_x)
         test_pred_y_RT = RT.query(test_x)
-        test_dt_mae = (test_pred_y_DT - test_y).sum() / test_y.shape[0]
-        test_rt_mae = (test_pred_y_RT - test_y).sum() / test_y.shape[0]
+        test_dt_mae = np.sum(np.abs(test_pred_y_DT - test_y)) / test_y.shape[0]
+        test_rt_mae = np.sum(np.abs(test_pred_y_RT - test_y)) / test_y.shape[0]
         test_DT.append(test_dt_mae)
         test_RT.append(test_rt_mae)
 
