@@ -169,8 +169,8 @@ def experiment2(train_x, train_y, test_x, test_y):
         test_rmses.append(test_rmse)
 
     ticks = range(1, 101)
-    plt.plot(ticks, train_rmses, label="in sample")
-    plt.plot(ticks, test_rmses, label="out sample")
+    plt.plot(ticks, train_rmses, label="training sample")
+    plt.plot(ticks, test_rmses, label="testing sample")
     plt.title("Leaf Size vs RMSE with BagLearner with 20 bags using DT")
     plt.xlabel("Leaf Size")
     plt.ylabel("RMSE")
@@ -194,8 +194,8 @@ def experiment2(train_x, train_y, test_x, test_y):
         test_rmses.append(test_rmse)
 
     ticks = range(1, 101)
-    plt.plot(ticks, train_rmses, label="in sample")
-    plt.plot(ticks, test_rmses, label="out sample")
+    plt.plot(ticks, train_rmses, label="training sample")
+    plt.plot(ticks, test_rmses, label="testing sample")
     plt.title("Leaf Size vs RMSE with BagLearner with 40 bags using DT")
     plt.xlabel("Leaf Size")
     plt.ylabel("RMSE")
