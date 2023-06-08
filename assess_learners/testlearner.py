@@ -243,17 +243,6 @@ def experiment3_1(train_x, train_y, test_x, test_y):
     plt.savefig("Figure4.png")
     plt.clf()
 
-    # ticks = range(1, 101)
-    # plt.plot(ticks, test_DT, label="testing sample DT")
-    # plt.plot(ticks, test_RT, label="testing sample RT")
-    # plt.title("Leaf Size vs MAE with DT and RT (Testing)")
-    # plt.xlabel("Leaf Size")
-    # plt.ylabel("MAE")
-    # plt.grid(linestyle="--")
-    # plt.legend(loc="best")
-    # plt.savefig("Figure5.png")
-    # plt.clf()
-
 def experiment3_2(train_x, train_y, test_x, test_y):
     #mean absolute percentage error = mean(abs(true - pred) / true) * 100
     train_DT= []
@@ -268,15 +257,15 @@ def experiment3_2(train_x, train_y, test_x, test_y):
 
         train_pred_y_DT = DT.query(train_x)
         train_pred_y_RT = RT.query(train_x)
-        train_dt_mape = np.mean(np.abs(train_y - train_pred_y_DT) / train_y) * 100
-        train_rt_mape = np.mean(np.abs(train_y - train_pred_y_RT) / train_y) * 100
+        train_dt_mape = np.mean(np.abs((train_y - train_pred_y_DT) / train_y)) * 100
+        train_rt_mape = np.mean(np.abs((train_y - train_pred_y_RT) / train_y)) * 100
         train_DT.append(train_dt_mape)
         train_RT.append(train_rt_mape)
 
         test_pred_y_DT = DT.query(test_x)
         test_pred_y_RT = RT.query(test_x)
-        test_dt_mape = np.mean(np.abs(test_y - test_pred_y_DT) / test_y) * 100
-        test_rt_mape = np.mean(np.abs(test_y - test_pred_y_RT) / test_y) * 100
+        test_dt_mape = np.mean(np.abs((test_y - test_pred_y_DT) / test_y)) * 100
+        test_rt_mape = np.mean(np.abs((test_y - test_pred_y_RT) / test_y)) * 100
         test_DT.append(test_dt_mape)
         test_RT.append(test_rt_mape)
 
