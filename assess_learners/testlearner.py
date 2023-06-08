@@ -233,7 +233,9 @@ def experiment3_1(train_x, train_y, test_x, test_y):
     ticks = range(1, 101)
     plt.plot(ticks, train_DT, label="training sample DT")
     plt.plot(ticks, train_RT, label="training sample RT")
-    plt.title("Leaf Size vs MAE with DT and RT (Training)")
+    plt.plot(ticks, test_DT, label="testing sample DT")
+    plt.plot(ticks, test_RT, label="testing sample RT")
+    plt.title("Leaf Size vs MAE with DT and RT")
     plt.xlabel("Leaf Size")
     plt.ylabel("MAE")
     plt.grid(linestyle="--")
@@ -241,16 +243,16 @@ def experiment3_1(train_x, train_y, test_x, test_y):
     plt.savefig("Figure4.png")
     plt.clf()
 
-    ticks = range(1, 101)
-    plt.plot(ticks, test_DT, label="testing sample DT")
-    plt.plot(ticks, test_RT, label="testing sample RT")
-    plt.title("Leaf Size vs MAE with DT and RT (Testing)")
-    plt.xlabel("Leaf Size")
-    plt.ylabel("MAE")
-    plt.grid(linestyle="--")
-    plt.legend(loc="best")
-    plt.savefig("Figure5.png")
-    plt.clf()
+    # ticks = range(1, 101)
+    # plt.plot(ticks, test_DT, label="testing sample DT")
+    # plt.plot(ticks, test_RT, label="testing sample RT")
+    # plt.title("Leaf Size vs MAE with DT and RT (Testing)")
+    # plt.xlabel("Leaf Size")
+    # plt.ylabel("MAE")
+    # plt.grid(linestyle="--")
+    # plt.legend(loc="best")
+    # plt.savefig("Figure5.png")
+    # plt.clf()
 
 def experiment3_2(train_x, train_y, test_x, test_y):
     #mean absolute percentage error = mean(abs(true - pred) / true) * 100
@@ -288,7 +290,7 @@ def experiment3_2(train_x, train_y, test_x, test_y):
     plt.ylabel("MAPE (%)")
     plt.grid(linestyle="--")
     plt.legend(loc="best")
-    plt.savefig("Figure6.png")
+    plt.savefig("Figure5.png")
     plt.clf()
 
 if __name__ == "__main__":
