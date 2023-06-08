@@ -48,7 +48,7 @@ class RTLearner(object):
         :return: The GT username of the student
         :rtype: str
         """
-        return "jpb6"  # replace tb34 with your Georgia Tech username
+        return "jpb6"
 
     def add_evidence(self, data_x, data_y):
         """
@@ -107,13 +107,13 @@ class RTLearner(object):
     def query_tuple(self, tree_tuple):
         row_idx = 0
         while (self.tree[row_idx, 0] != -404):
-            f = float(self.tree[row_idx, 0])
-            split_val = float(self.tree[row_idx, 1])
+            f = self.tree[row_idx, 0]
+            split_val = self.tree[row_idx, 1]
 
             if tree_tuple[int(f)] <= split_val:
-                row_idx += int(float(self.tree[row_idx, 2]))
+                row_idx += int(self.tree[row_idx, 2])
             else:
-                row_idx += int(float(self.tree[row_idx, 3]))
+                row_idx += int(self.tree[row_idx, 3])
         return self.tree[row_idx, 1]
 
 

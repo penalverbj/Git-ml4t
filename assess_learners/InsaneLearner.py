@@ -9,8 +9,8 @@ class InsaneLearner(object):
     def author(self):
         return 'jpb6'
     def add_evidence(self, data_x, data_y):
-        for learner in self.learner_list:
-            learner.add_evidence(data_x, data_y)
+        for l in self.learner_list:
+            l.add_evidence(data_x, data_y)
     def query(self, points):
         temp = []
         for l in self.learner_list:

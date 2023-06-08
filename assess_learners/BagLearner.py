@@ -19,9 +19,9 @@ class BagLearner(object):
 
     def add_evidence(self, data_x, data_y):
         for l in self.learner_list:
-            i = np.random.choice(range(data_x.shape[0]), data_x.shape[0], replace=True)
-            x = data_x[i]
-            y = data_y[i]
+            idxs = np.random.choice(range(data_x.shape[0]), data_x.shape[0], replace=True)
+            x = data_x[idxs]
+            y = data_y[idxs]
             l.add_evidence(x, y)
 
     def query(self, points):
