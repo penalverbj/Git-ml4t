@@ -29,6 +29,3 @@ class BagLearner(object):
         for l in self.learner_list:
             temp.append(l.query(points))
         return np.mean(temp, axis=0)
-
-if __name__ == '__main__':
-    print('BagLearner Main')

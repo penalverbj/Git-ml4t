@@ -115,7 +115,3 @@ class RTLearner(object):
             else:
                 row_idx += int(self.tree[row_idx, 3])
         return self.tree[row_idx, 1]
-
-
-if __name__ == "__main__":
-    print("the secret clue is 'zzyzx'")
