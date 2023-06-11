@@ -26,7 +26,7 @@ import math
   		  	   		  		 			  		 			 	 	 		 		 	
 import numpy as np  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
-import DTLearner as dt  		  	   		  		 			  		 			 	 	 		 		 	
+import DTLearner as dt
 import LinRegLearner as lrl  		  	   		  		 			  		 			 	 	 		 		 	
 from gen_data import best_4_dt, best_4_lin_reg  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	

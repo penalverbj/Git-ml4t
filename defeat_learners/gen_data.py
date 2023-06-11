@@ -45,11 +45,11 @@ def best_4_lin_reg(seed=1489683273):
     :rtype: numpy.ndarray  		  	   		  		 			  		 			 	 	 		 		 	
     """
     np.random.seed(seed)
-    x = np.zeros((100, 2))
-    y = np.random.random(size=(100,)) * 200 - 100
-    # Here's is an example of creating a Y from randomly generated  		  	   		  		 			  		 			 	 	 		 		 	
-    # X with multiple columns  		  	   		  		 			  		 			 	 	 		 		 	
-    # y = x[:,0] + np.sin(x[:,1]) + x[:,2]**2 + x[:,3]**3  		  	   		  		 			  		 			 	 	 		 		 	
+    features = 6
+    rows = 500
+    x = np.random.random((rows, features)) * 200 - 100
+    # basic linear combination of features by adding them
+    y = np.sum(x, axis=1)
     return x, y
 
 
@@ -65,8 +65,16 @@ def best_4_dt(seed=1489683273):
     :rtype: numpy.ndarray  		  	   		  		 			  		 			 	 	 		 		 	
     """
     np.random.seed(seed)
-    x = np.zeros((100, 2))
-    y = np.random.random(size=(100,)) * 200 - 100
+    features = 6
+    rows = 500
+    x = np.random.random((rows, features)) * 200 - 100
+    avg = np.mean(x)
+    y = np.zeros(rows)
+    for r in range(rows):
+        if (x[r,3] < avg):
+            y[r] = 5
+        else:
+            y[r] = -5
     return x, y
 
 
@@ -76,3 +84,11 @@ def author():
     :rtype: str  		  	   		  		 			  		 			 	 	 		 		 	
     """
     return "jpb6"  # Change this to your user ID
+
+# if __name__ == "__main__":
+#     x,y = best_4_dt()
+#     print(x.shape)
+#     print(y.shape)
+#
+#     print(x[0,:])
+#     print(y[0])

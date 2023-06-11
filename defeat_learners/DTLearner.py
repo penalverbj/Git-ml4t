@@ -22,23 +22,26 @@ GT honor code violation.
   		  	   		  		 			  		 			 	 	 		 		 	
 -----do not edit anything above this line---  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
-Student Name: Jose Penalver Bartolome (replace with your name)  		  	   		  		 			  		 			 	 	 		 		 	
-GT User ID: jpb6 (replace with your User ID)  		  	   		  		 			  		 			 	 	 		 		 	
-GT ID: 903376324 (replace with your GT ID)  		  	   		  		 			  		 			 	 	 		 		 	
-"""  		  	   		  		 			  		 			 	 	 		 		 	
-  		  	   		  		 			  		 			 	 	 		 		 	
-import warnings  		  	   		  		 			  		 			 	 	 		 		 	
-  		  	   		  		 			  		 			 	 	 		 		 	
-import numpy as np  		  	   		  		 			  		 			 	 	 		 		 	
-  		  	   		  		 			  		 			 	 	 		 		 	
-  		  	   		  		 			  		 			 	 	 		 		 	
-class DTLearner(object):
-    """
-    This is a Linear Regression Learner. It is implemented correctly.
+Student Name: Tucker Balch (replace with your name)  		  	   		  		 			  		 			 	 	 		 		 	
+GT User ID: tb34 (replace with your User ID)  		  	   		  		 			  		 			 	 	 		 		 	
+GT ID: 900897987 (replace with your GT ID)  		  	   		  		 			  		 			 	 	 		 		 	
+"""
 
-    :param verbose: If “verbose” is True, your code can print out information for debugging.
-        If verbose = False your code should not generate ANY output. When we test your code, verbose will be False.
-    :type verbose: bool
+import warnings
+
+import numpy as np
+
+
+class DTLearner(object):
+    """  		  	   		  		 			  		 			 	 	 		 		 	
+    This is a decision tree learner object that is implemented incorrectly. You should replace this DTLearner with  		  	   		  		 			  		 			 	 	 		 		 	
+    your own correct DTLearner from Project 3.  		  	   		  		 			  		 			 	 	 		 		 	
+  		  	   		  		 			  		 			 	 	 		 		 	
+    :param leaf_size: The maximum number of samples to be aggregated at a leaf, defaults to 1.  		  	   		  		 			  		 			 	 	 		 		 	
+    :type leaf_size: int  		  	   		  		 			  		 			 	 	 		 		 	
+    :param verbose: If “verbose” is True, your code can print out information for debugging.  		  	   		  		 			  		 			 	 	 		 		 	
+        If verbose = False your code should not generate ANY output. When we test your code, verbose will be False.  		  	   		  		 			  		 			 	 	 		 		 	
+    :type verbose: bool  		  	   		  		 			  		 			 	 	 		 		 	
     """
 
     def __init__(self, leaf_size=1, verbose=False):
@@ -121,7 +124,6 @@ class DTLearner(object):
         if (self.verbose):
             print(out)
         return out
-
 
     def query_tuple(self, tree_tuple):
         row_idx = 0
