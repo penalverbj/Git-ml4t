@@ -1,4 +1,6 @@
 """"""
+import math
+
 """MC2-P1: Market simulator.  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
 Copyright 2018, Georgia Institute of Technology (Georgia Tech)  		  	   		  		 			  		 			 	 	 		 		 	
@@ -65,36 +67,37 @@ def compute_portvals(
     start_date = dates[0]
     end_date = dates[-1]
 
-    prices_df = pd.DataFrame(get_data(syms, pd.date_range(start_date, end_date)))
+    prices_df = get_data(syms, pd.date_range(start_date, end_date))
     prices_df['cash'] = 1
 
     trades_df = prices_df.copy(deep=True)
     trades_df[:] = 0
 
-    holdings_df = trades_df.copy(deep=True)
+    holdings_df = prices_df.copy(deep=True)
+    holdings_df[:] = 0
+    holdings_df.ix[0, 'cash'] = start_val
 
     commission_dict = {d: 0 for d in dates}
 
-    for d, c in orders_df.iterrows():
+    for date, c in orders_df.iterrows():
         shares = c['Shares']
         sym = c['Symbol']
 
         if c['Order'] == 'BUY':
-            trades_df.loc[d, sym] += shares
+            trades_df.loc[date, sym] += shares
         else:
-            trades_df.loc[d, sym] -= shares
+            trades_df.loc[date, sym] -= shares
 
-        commission_dict[d] -= commission + (shares * prices_df.loc[d, sym] * impact)
+        commission_dict[date] -= commission + (shares * prices_df.loc[date, sym] * impact)
 
-    for d in dates:
-        com = commission_dict[d]
-        trade_price_sum = trades_df.ix[d, :-1].multiply(prices_df.ix[d, :-1]).sum()
-        trades_df.loc[d, 'cash'] += com - trade_price_sum
+    for date in dates:
+        com = commission_dict[date]
+        trade_price_sum = trades_df.ix[date, :-1].multiply(prices_df.ix[date, :-1]).sum()
+        trades_df.loc[date, 'cash'] += com - trade_price_sum
 
-    holdings_df.iloc[0, :-1] = trades_df.iloc[0, :-1]
-    holdings_df.ix[0, 'cash'] = start_val + trades_df.ix[0, 'cash']
+    holdings_df.iloc[0, :] += trades_df.iloc[0, :]
 
-    for i in range(1, holdings_df.shape[0]):
+    for i in range(1, trades_df.shape[0]):
         t = trades_df.iloc[i, :]
         h = holdings_df.iloc[i - 1, :]
         holdings_df.iloc[i, :] = t + h
@@ -115,7 +118,7 @@ def test_code():
     # note that during autograding his function will not be called.  		  	   		  		 			  		 			 	 	 		 		 	
     # Define input parameters  		  	   		  		 			  		 			 	 	 		 		 	
 
-    of = "./orders/orders-02.csv"
+    of = "./orders/orders-11.csv"
     sv = 1000000
 
     # Process orders  		  	   		  		 			  		 			 	 	 		 		 	
@@ -125,16 +128,19 @@ def test_code():
     else:
         "warning, code did not return a DataFrame"
 
-    # Get portfolio stats  		  	   		  		 			  		 			 	 	 		 		 	
-    # Here we just fake the data. you should use your code from previous assignments.  		  	   		  		 			  		 			 	 	 		 		 	
-    start_date = dt.datetime(2008, 1, 1)
-    end_date = dt.datetime(2008, 6, 1)
+    start_date = portvals.index[0]
+    end_date = portvals.index[-1]
+    daily_rets = (portvals[1:] / portvals.shift(1) - 1)
+    daily_rets.iloc[0] = 0
+    daily_rets = daily_rets[1:]
+
     cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = [
-        0.2,
-        0.01,
-        0.02,
-        1.5,
+        portvals[-1] / portvals[0] - 1,
+        daily_rets.mean(),
+        daily_rets.std(),
+        (math.sqrt(252)) * (daily_rets.mean() / daily_rets.std()),
     ]
+
     cum_ret_SPY, avg_daily_ret_SPY, std_daily_ret_SPY, sharpe_ratio_SPY = [
         0.2,
         0.01,
@@ -142,7 +148,8 @@ def test_code():
         1.5,
     ]
 
-    # Compare portfolio against $SPX  		  	   		  		 			  		 			 	 	 		 		 	
+    # Compare portfolio against $SPX
+    print('\n')
     print(f"Date Range: {start_date} to {end_date}")
     print()
     print(f"Sharpe Ratio of Fund: {sharpe_ratio}")
