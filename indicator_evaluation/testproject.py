@@ -23,6 +23,8 @@ def part_1():
     optimalNorm = optimalPortVals / optimalPortVals[0]
 
     benchmarkPortVals = pd.DataFrame(util.get_data(["JPM"], pd.date_range(sd, ed)))
+    benchmarkPortVals.fillna(method='ffill', inplace=True)
+    benchmarkPortVals.fillna(method='bfill', inplace=True)
     benchmarkPortVals = benchmarkPortVals.drop(['SPY'], axis=1)
     crBenchmark = (benchmarkPortVals.iloc[-1] / benchmarkPortVals.iloc[0]) - 1
     drBenchmark = (benchmarkPortVals.iloc[1:] / benchmarkPortVals.shift(1)) - 1
