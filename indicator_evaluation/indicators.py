@@ -23,12 +23,12 @@ def sma(data, window):
 
 def bolinger_bands(data, window, threshold):
     avg = sma(data, window)
-    std = avg.rolling(window=window, center=False).std()
+    std = data.rolling(window=window, center=False).std()
 
-    upper_band = avg + threshold * std
+    upper_band = pd.DataFrame(avg['mean'] + threshold * std['JPM'])
     upper_band.rename(columns={upper_band.columns[0]: "upper"}, inplace=True)
 
-    lower_band = avg - threshold * std
+    lower_band = pd.DataFrame(avg['mean'] - threshold * std['JPM'])
     lower_band.rename(columns={lower_band.columns[0]: "lower"}, inplace=True)
 
     df_out = pd.concat([avg, upper_band, lower_band], axis=1)
