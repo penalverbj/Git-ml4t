@@ -17,13 +17,16 @@ def testPolicy(symbol='AAPL', sd=dt.datetime(2010, 1, 1), ed=dt.datetime(2011, 1
 
     prices.fillna(method='bfill', inplace=True)
     trades = pd.DataFrame(data=0, index=prices.index, columns={symbol})
-    trades[symbol] = prices.iloc[0, -1] * 1000
+    old_position = 1
+    trades[symbol] = 1000
 
     for row, col in prices[1:].iterrows():
-        if col['shift'] == 1 and trades[row-1] != 2000:
+        if col['shift'] == 1 and old_position <= 0:
             trades.loc[row] = 2000
-        elif col['shift'] == -1 and trades[row-1] != -2000:
+            old_position = col['shift']
+        elif col['shift'] == -1 and old_position >= 0:
             trades.loc[row] = -2000
+            old_position = col['shift']
         else:
             trades.loc[row] = 0
 
