@@ -12,19 +12,18 @@ def testPolicy(symbol='AAPL', sd=dt.datetime(2010, 1, 1), ed=dt.datetime(2011, 1
     if (symbol != 'SPY'):
         prices = prices.drop(['SPY'], axis=1)
 
-    prices['shift'] = prices.shift(periods=-1, axis="rows") - prices
+    prices['shift'] = prices.shift(periods=-1) - prices
     prices['shift'] /= abs(prices['shift'])
 
     prices.fillna(method='bfill', inplace=True)
-
     trades = pd.DataFrame(data=0, index=prices.index, columns={symbol})
-    old_position = prices.iloc[0, -1]
-    trades[symbol] = old_position * 1000
+    trades[symbol] = prices.iloc[0, -1] * 1000
 
     for row, col in prices[1:].iterrows():
-        if col['shift'] != old_position:
-            trades.loc[row] = old_position * -2000
-            old_position = col['shift']
+        if col['shift'] == 1 and trades[row-1] != 2000:
+            trades.loc[row] = 2000
+        elif col['shift'] == -1 and trades[row-1] != -2000:
+            trades.loc[row] = -2000
         else:
             trades.loc[row] = 0
 
