@@ -64,6 +64,6 @@ def cci(data, window):
     mad = data.rolling(window).apply(lambda x: pd.Series(x).mad())
     nom = pd.DataFrame(tp['JPM'] - avg['mean'])
     nom.rename(columns={nom.columns[0] : 'nom'}, inplace=True)
-    cci = pd.DataFrame(nom['nom'] / (.15 * mad['JPM']))
+    cci = pd.DataFrame(nom['nom'] / (.015 * mad['JPM']))
     cci.rename(columns={cci.columns[0]: "cci"}, inplace=True)
     return cci
