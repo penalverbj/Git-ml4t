@@ -82,7 +82,7 @@ class QLearner(object):
         if dyna != 0:
             self.Tc = np.full(shape=(num_states, num_actions, num_states), fill_value=0.0001)
             self.T = self.Tc / np.sum(self.Tc, axis=2, keepdims=True)
-            self.R = np.full(shape=(num_states, num_actions), fill_value=-1)
+            self.R = np.full(self.Q_table.shape, fill_value=-1)
 
     def querysetstate(self, s):
         """  		  	   		  		 			  		 			 	 	 		 		 	
@@ -94,18 +94,19 @@ class QLearner(object):
         :rtype: int  		  	   		  		 			  		 			 	 	 		 		 	
         """
         self.s = s
-        action = rand.randint(0, self.num_actions - 1)
+        action = rand.randint(0, self.num_actions)
         if self.verbose:
             print(f"s = {s}, a = {action}")
         return action
 
     def bellman(self, s, a, s_prime, r):
         return (1 - self.alpha) * self.Q_table[s, a] + self.alpha * (r + self.gamma * self.Q_table[s_prime, np.argmax(self.Q_table[s_prime])])
+        # return np.add(np.multiply((1 - self.alpha), self.Q_table[s, a]), np.multiply(self.alpha, np.add(r, np.multiply(self.gamma, self.Q_table[s_prime, np.argmax(self.Q_table[s_prime])]))))
 
     def query(self, s_prime, r):
         """  		  	   		  		 			  		 			 	 	 		 		 	
         Update the Q table and return an action  		  	   		  		 			  		 			 	 	 		 		 	
-  		  	   		  		 			  		 			 	 	 		 		 	
+
         :param s_prime: The new state  		  	   		  		 			  		 			 	 	 		 		 	
         :type s_prime: int  		  	   		  		 			  		 			 	 	 		 		 	
         :param r: The immediate reward
@@ -115,26 +116,26 @@ class QLearner(object):
         """
         sq = self.s
         aq = self.a
+        num_actions = self.num_actions
         self.Q_table[sq][aq] = self.bellman(sq, aq, s_prime, r)
 
-        if np.random.random() <= self.rar:
-            action = np.argmax(self.Q_table[s_prime])
+        if np.random.random() > self.rar:
+            action = np.random.randint(0, num_actions)
         else:
-            action = np.random.randint(0, self.num_actions)
+            action = np.argmax(self.Q_table[s_prime])
 
         self.rar *= self.radr
 
-        if self.dyna != 0:
-            self.Tc[self.s][self.a][s_prime] += 1
-            sm = np.sum(self.Tc, axis=2, keepdims=True)
-            self.T = self.Tc / sm
-            self.R[self.s][self.a] = (1 - self.alpha) * self.R[self.s][self.a] + (self.alpha * r)
-
-            for i in range(self.dyna):
-                s = np.random.randint(0, self.num_states)
-                a = np.random.randint(0, self.num_actions)
-                sd_prime = np.random.multinomial(1, self.T[s][a]).argmax()
-                self.Q_table[s][a] = self.bellman(s, a, sd_prime, self.R[s][a])
+        # if self.dyna != 0:
+        #     self.Tc[sq][aq][s_prime] += 1
+        #     self.T = self.Tc / np.sum(self.Tc, axis=2, keepdims=True)
+        #     self.R[sq][aq] = (1 - self.alpha) * self.R[sq][aq] + (self.alpha * r)
+        #
+        #     for i in range(self.dyna):
+        #         s = np.random.randint(0, self.num_states)
+        #         a = np.random.randint(0, self.num_actions)
+        #         sd_prime = np.random.multinomial(1, self.T[s][a]).argmax()
+        #         self.Q_table[s][a] = self.bellman(s, a, sd_prime, self.R[s][a])
 
         self.s = s_prime
         self.a = action
