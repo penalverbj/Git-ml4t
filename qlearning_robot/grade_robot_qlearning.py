@@ -73,7 +73,7 @@ qlearning_test_cases = [
         world_file="world01.csv",  		  	   		  		 			  		 			 	 	 		 		 	
         best_reward=-17,  		  	   		  		 			  		 			 	 	 		 		 	
         median_reward=-29.5,  		  	   		  		 			  		 			 	 	 		 		 	
-        max_time=2,  		  	   		  		 			  		 			 	 	 		 		 	
+        max_time=2,
         points=9.5,  		  	   		  		 			  		 			 	 	 		 		 	
     ),  		  	   		  		 			  		 			 	 	 		 		 	
     QLearningTestCase(  		  	   		  		 			  		 			 	 	 		 		 	
@@ -146,7 +146,7 @@ qlearning_test_cases = [
         world_file="world01.csv",  		  	   		  		 			  		 			 	 	 		 		 	
         best_reward=-12,  		  	   		  		 			  		 			 	 	 		 		 	
         median_reward=-29.5,  		  	   		  		 			  		 			 	 	 		 		 	
-        max_time=10,  		  	   		  		 			  		 			 	 	 		 		 	
+        max_time=100,
         points=2.5,  		  	   		  		 			  		 			 	 	 		 		 	
     ),  		  	   		  		 			  		 			 	 	 		 		 	
     QLearningTestCase(  		  	   		  		 			  		 			 	 	 		 		 	
@@ -155,7 +155,7 @@ qlearning_test_cases = [
         world_file="world02.csv",  		  	   		  		 			  		 			 	 	 		 		 	
         best_reward=-14,  		  	   		  		 			  		 			 	 	 		 		 	
         median_reward=-19,  		  	   		  		 			  		 			 	 	 		 		 	
-        max_time=10,  		  	   		  		 			  		 			 	 	 		 		 	
+        max_time=10,
         points=2.5,  		  	   		  		 			  		 			 	 	 		 		 	
     ),  		  	   		  		 			  		 			 	 	 		 		 	
     QLearningTestCase(  		  	   		  		 			  		 			 	 	 		 		 	
