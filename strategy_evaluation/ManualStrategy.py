@@ -43,43 +43,42 @@ def manualStrategy(symbol, start_date, end_date, starting_value):
             sma_vote = 0
 
         if macd_today.loc['signal'] > macd_today.loc['macd']:
-            macd_vote = 2
+            macd_vote = 1
         elif macd_today.loc['signal'] < macd_today.loc['macd']:
-            macd_vote = -10
+            macd_vote = -1
         else:
             macd_vote = 1
 
-        if cci_today.loc['cci'] > 100:
-            cci_vote = 2
-        elif cci_today.loc['cci'] < -100:
-            cci_vote = -5
+        if cci_today.loc['cci'] >= 100:
+            cci_vote = 1
+        elif cci_today.loc['cci'] <= -100:
+            cci_vote = -1
         else:
             cci_vote = 0
 
         final_vote = macd_vote + cci_vote + sma_vote
-        if final_vote >= 3:
+        if final_vote <= 3:
             action = 1000 - pos_curr
 
-        elif final_vote <= -3:
+        elif final_vote >= -3:
             action = - 1000 - pos_curr
         else:
             action = -pos_curr
 
-        if a_last >= 5:
+        if a_last >= 3:
             trades.loc[date] = action
             pos_curr += action
             a_last = 0
 
     return trades
 
-
-if __name__ == "__main__":
-    start_date = dt.datetime(2008, 6, 1)
-    end_date = dt.datetime(2009, 6, 1)
+def inSample():
+    start_date = dt.datetime(2008, 1, 1)
+    end_date = dt.datetime(2009, 12, 30)
     symbols = ["JPM"]
     trades = manualStrategy(symbols, start_date, end_date, starting_value=100000)
 
-    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=0, commission=0)
+    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
     crManual = (manualPortVals[-1] / manualPortVals[0]) - 1
     drManual = (manualPortVals[1:] / manualPortVals.shift(1)) - 1
     std_drManual = drManual.std()
@@ -96,19 +95,122 @@ if __name__ == "__main__":
     mean_drBenchmark = drBenchmark.mean()
     benchmarkNorm = benchmarkPortVals / benchmarkPortVals.iloc[0]
 
+    f = open("p8_inSample_results.txt", "a")
+    f.truncate(0)
+    f.write(
+        "MANUAL STRAT VALS: \n CR = " + str(crManual) + "\n STD_DR = " + str(std_drManual) + "\n MEAN_DR = " + str(
+            mean_drManual) +
+        "\n\nBENCHMARK STRAT VALS: \n CR = " + str(crBenchmark) + "\n STD_DR = " + str(
+            std_drBenchmark) + "\n MEAN_DR = " + str(mean_drBenchmark) + "\n")
+    f.close()
+
+    long = []
+    short = []
+    current = 0
+    last_action = 'OUT'
+    for date in trades.index:
+        current += trades.loc[date].loc['JPM']
+        if current < 0:
+            if last_action == 'OUT' or last_action == 'LONG':
+                last_action = 'SHORT'
+                short.append(date)
+        elif current > 0:
+            if last_action == 'OUT' or last_action == 'SHORT':
+                last_action = 'LONG'
+                long.append(date)
+        else:
+            last_action = 'OUT'
+
     f = plt.figure()
     f.set_figwidth(10)
     f.set_figheight(7)
     plt.plot(manualNorm, label="Manual Strategy", color="red")
     plt.plot(benchmarkNorm, label="Benchmark", color="purple")
+    for date in short:
+        plt.axvline(date, color="black")
+    for date in long:
+        plt.axvline(date, color="blue")
     plt.grid(linestyle="--")
     plt.legend(loc="best")
-    plt.title("Normalized Portfolio Values")
+    plt.title("In-Sample Normalized Portfolio Values")
     plt.xlabel("Date")
     plt.ylabel("Normalized Value ($)")
-    plt.show()
+    plt.savefig("ManualInSample.png")
     plt.clf()
     plt.close(f)
+
+def outSample():
+    start_date = dt.datetime(2010, 1, 1)
+    end_date = dt.datetime(2011, 12, 30)
+    symbols = ["JPM"]
+    trades = manualStrategy(symbols, start_date, end_date, starting_value=100000)
+
+    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
+    crManual = (manualPortVals[-1] / manualPortVals[0]) - 1
+    drManual = (manualPortVals[1:] / manualPortVals.shift(1)) - 1
+    std_drManual = drManual.std()
+    mean_drManual = drManual.mean()
+    manualNorm = manualPortVals / manualPortVals[0]
+
+    benchmarkPortVals = pd.DataFrame(util.get_data(["JPM"], pd.date_range(start_date, end_date)))
+    benchmarkPortVals.fillna(method='ffill', inplace=True)
+    benchmarkPortVals.fillna(method='bfill', inplace=True)
+    benchmarkPortVals = benchmarkPortVals.drop(['SPY'], axis=1)
+    crBenchmark = (benchmarkPortVals.iloc[-1] / benchmarkPortVals.iloc[0]) - 1
+    drBenchmark = (benchmarkPortVals.iloc[1:] / benchmarkPortVals.shift(1)) - 1
+    std_drBenchmark = drBenchmark.std()
+    mean_drBenchmark = drBenchmark.mean()
+    benchmarkNorm = benchmarkPortVals / benchmarkPortVals.iloc[0]
+
+    long = []
+    short = []
+    current = 0
+    last_action = 0
+    for date in trades.index:
+        current = trades.loc[date].loc['JPM']
+        print(current)
+        if current < 0:
+            last_action = current
+            short.append(date)
+        elif current > 0:
+            last_action = current
+            long.append(date)
+        else:
+            last_action = current
+
+    print(long)
+    print(short)
+
+    f = open("p8_outSample_results.txt", "a")
+    f.truncate(0)
+    f.write(
+        "MANUAL STRAT VALS: \n CR = " + str(crManual) + "\n STD_DR = " + str(std_drManual) + "\n MEAN_DR = " + str(
+            mean_drManual) +
+        "\n\nBENCHMARK STRAT VALS: \n CR = " + str(crBenchmark) + "\n STD_DR = " + str(
+            std_drBenchmark) + "\n MEAN_DR = " + str(mean_drBenchmark) + "\n")
+    f.close()
+
+    f = plt.figure()
+    f.set_figwidth(10)
+    f.set_figheight(7)
+    plt.plot(manualNorm, label="Manual Strategy", color="red")
+    plt.plot(benchmarkNorm, label="Benchmark", color="purple")
+    for date in short:
+        plt.axvline(date, color="black")
+    for date in long:
+        plt.axvline(date, color="blue")
+    plt.grid(linestyle="--")
+    plt.legend(loc="best")
+    plt.title("Out-of-Sample Normalized Portfolio Values")
+    plt.xlabel("Date")
+    plt.ylabel("Normalized Value ($)")
+    plt.savefig("ManualOutSample.png")
+    plt.clf()
+    plt.close(f)
+
+if __name__ == "__main__":
+    inSample()
+    outSample()
 
 
 
