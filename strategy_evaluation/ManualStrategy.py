@@ -5,8 +5,10 @@ import marketsimcode
 import matplotlib.pyplot as plt
 import indicators
 
+
 def author():
-  return 'jpb6' # replace tb34 with your Georgia Tech username.
+    return 'jpb6'  # replace tb34 with your Georgia Tech username.
+
 
 def manualStrategy(symbol, start_date, end_date, starting_value):
     sym = symbol[0]
@@ -24,12 +26,10 @@ def manualStrategy(symbol, start_date, end_date, starting_value):
     cci = indicators.cci(prices, 14)
     sma = indicators.sma(prices, 24)
 
-    pos_curr = 0
-    a_last = 0
-
+    short = []
+    long = []
+    holdings = 0
     for date in dates:
-        a_last += 1
-
         price_today = prices.loc[date]
         sma_today = sma.loc[date]
         macd_today = macd.loc[date]
@@ -57,27 +57,34 @@ def manualStrategy(symbol, start_date, end_date, starting_value):
             cci_vote = 0
 
         final_vote = macd_vote + cci_vote + sma_vote
-        if final_vote <= 3:
-            action = 1000 - pos_curr
+        if holdings == 0:
+            if final_vote >= 3:
+                trades.loc[date] = 1000
+                long.append(date)
+                holdings = 1000
+            elif final_vote <= -3:
+                trades.loc[date] = -1000
+                short.append(date)
+                holdings = -1000
+        elif holdings == 1000:
+            if final_vote <= -3:
+                trades.loc[date] = -2000
+                short.append(date)
+                holdings = -1000
+        elif holdings == -1000:
+            if final_vote >= 3:
+                trades.loc[date] = 2000
+                long.append(date)
+                holdings = 1000
 
-        elif final_vote >= -3:
-            action = - 1000 - pos_curr
-        else:
-            action = -pos_curr
+    return trades, long, short
 
-        if a_last >= 3:
-            trades.loc[date] = action
-            pos_curr += action
-            a_last = 0
-
-    return trades
 
 def inSample():
     start_date = dt.datetime(2008, 1, 1)
     end_date = dt.datetime(2009, 12, 30)
     symbols = ["JPM"]
-    trades = manualStrategy(symbols, start_date, end_date, starting_value=100000)
-
+    trades, long, short = manualStrategy(symbols, start_date, end_date, starting_value=100000)
     manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
     crManual = (manualPortVals[-1] / manualPortVals[0]) - 1
     drManual = (manualPortVals[1:] / manualPortVals.shift(1)) - 1
@@ -104,23 +111,6 @@ def inSample():
             std_drBenchmark) + "\n MEAN_DR = " + str(mean_drBenchmark) + "\n")
     f.close()
 
-    long = []
-    short = []
-    current = 0
-    last_action = 'OUT'
-    for date in trades.index:
-        current += trades.loc[date].loc['JPM']
-        if current < 0:
-            if last_action == 'OUT' or last_action == 'LONG':
-                last_action = 'SHORT'
-                short.append(date)
-        elif current > 0:
-            if last_action == 'OUT' or last_action == 'SHORT':
-                last_action = 'LONG'
-                long.append(date)
-        else:
-            last_action = 'OUT'
-
     f = plt.figure()
     f.set_figwidth(10)
     f.set_figheight(7)
@@ -139,11 +129,12 @@ def inSample():
     plt.clf()
     plt.close(f)
 
+
 def outSample():
     start_date = dt.datetime(2010, 1, 1)
     end_date = dt.datetime(2011, 12, 30)
     symbols = ["JPM"]
-    trades = manualStrategy(symbols, start_date, end_date, starting_value=100000)
+    trades, long, short = manualStrategy(symbols, start_date, end_date, starting_value=100000)
 
     manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
     crManual = (manualPortVals[-1] / manualPortVals[0]) - 1
@@ -161,25 +152,6 @@ def outSample():
     std_drBenchmark = drBenchmark.std()
     mean_drBenchmark = drBenchmark.mean()
     benchmarkNorm = benchmarkPortVals / benchmarkPortVals.iloc[0]
-
-    long = []
-    short = []
-    current = 0
-    last_action = 0
-    for date in trades.index:
-        current = trades.loc[date].loc['JPM']
-        print(current)
-        if current < 0:
-            last_action = current
-            short.append(date)
-        elif current > 0:
-            last_action = current
-            long.append(date)
-        else:
-            last_action = current
-
-    print(long)
-    print(short)
 
     f = open("p8_outSample_results.txt", "a")
     f.truncate(0)
@@ -208,9 +180,7 @@ def outSample():
     plt.clf()
     plt.close(f)
 
+
 if __name__ == "__main__":
     inSample()
     outSample()
-
-
-
