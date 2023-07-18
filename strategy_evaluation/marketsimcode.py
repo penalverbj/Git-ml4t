@@ -32,7 +32,7 @@ def compute_portvals(
     sym = orders_df.columns[0]
     dates = orders_df.index
     start_date = dates[0]
-    end_date = dates[-2]
+    end_date = dates[-1]
     prices_df = pd.DataFrame(util.get_data([sym], pd.date_range(start_date, end_date)))
     prices_df['cash'] = 1
 

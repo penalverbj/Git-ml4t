@@ -1,4 +1,9 @@
 """"""
+import numpy as np
+from matplotlib import pyplot as plt
+
+from strategy_evaluation import marketsimcode
+
 """  		  	   		  		 			  		 			 	 	 		 		 	
 Template for implementing StrategyLearner  (c) 2016 Tucker Balch  		  	   		  		 			  		 			 	 	 		 		 	
   		  	   		  		 			  		 			 	 	 		 		 	
@@ -29,9 +34,12 @@ GT ID: 903376324 (replace with your GT ID)
 
 import datetime as dt
 import random
-
+import QLearner as q
 import pandas as pd
 import util as ut
+import indicators
+import BagLearner as bl
+import RTLearner as rt
 
 
 class StrategyLearner(object):
@@ -55,6 +63,7 @@ class StrategyLearner(object):
         self.verbose = verbose
         self.impact = impact
         self.commission = commission
+        self.learner = bl.BagLearner(learner=rt.RTLearner, kwargs={"leaf_size": 1}, bags=20, boost=False, verbose=False)
 
     # this method should create a QLearner, and train it for trading  		  	   		  		 			  		 			 	 	 		 		 	
     def add_evidence(
@@ -76,28 +85,32 @@ class StrategyLearner(object):
         :param sv: The starting value of the portfolio  		  	   		  		 			  		 			 	 	 		 		 	
         :type sv: int  		  	   		  		 			  		 			 	 	 		 		 	
         """
-
-        # add your code to do learning here  		  	   		  		 			  		 			 	 	 		 		 	
-
-        # example usage of the old backward compatible util function  		  	   		  		 			  		 			 	 	 		 		 	
         syms = [symbol]
         dates = pd.date_range(sd, ed)
-        prices_all = ut.get_data(syms, dates)  # automatically adds SPY  		  	   		  		 			  		 			 	 	 		 		 	
-        prices = prices_all[syms]  # only portfolio symbols  		  	   		  		 			  		 			 	 	 		 		 	
-        prices_SPY = prices_all["SPY"]  # only SPY, for comparison later  		  	   		  		 			  		 			 	 	 		 		 	
-        if self.verbose:
-            print(prices)
+        prices_all = ut.get_data(syms, dates)
+        prices = prices_all[syms]
 
-        # example use with new colname  		  	   		  		 			  		 			 	 	 		 		 	
-        volume_all = ut.get_data(
-            syms, dates, colname="Volume"
-        )  # automatically adds SPY  		  	   		  		 			  		 			 	 	 		 		 	
-        volume = volume_all[syms]  # only portfolio symbols  		  	   		  		 			  		 			 	 	 		 		 	
-        volume_SPY = volume_all["SPY"]  # only SPY, for comparison later  		  	   		  		 			  		 			 	 	 		 		 	
-        if self.verbose:
-            print(volume)
+        sma, macd, cci = get_indicators(prices)
 
-    # this method should use the existing policy and test it against new data  		  	   		  		 			  		 			 	 	 		 		 	
+        inds = pd.concat((sma, macd, cci), axis=1)
+        inds.fillna(0, inplace=True)
+        inds = inds[:-5]
+        trainX = inds.values
+
+        trainY = []
+        for i in range(prices.shape[0] - 5):
+            ratio = (prices.ix[i + 5, symbol] - prices.ix[i, symbol]) / prices.ix[i, symbol]
+            if ratio > (0.02 + self.impact):
+                trainY.append(1)
+            elif ratio < (-0.02 - self.impact):
+                trainY.append(-1)
+            else:
+                trainY.append(0)
+
+        trainY = np.array(trainY)
+
+        self.learner.add_evidence(trainX, trainY)
+
     def testPolicy(
             self,
             symbol="IBM",
@@ -123,25 +136,52 @@ class StrategyLearner(object):
         :rtype: pandas.DataFrame  		  	   		  		 			  		 			 	 	 		 		 	
         """
 
-        # here we build a fake set of trades  		  	   		  		 			  		 			 	 	 		 		 	
-        # your code should return the same sort of data  		  	   		  		 			  		 			 	 	 		 		 	
+        syms = [symbol]
         dates = pd.date_range(sd, ed)
-        prices_all = ut.get_data([symbol], dates)  # automatically adds SPY  		  	   		  		 			  		 			 	 	 		 		 	
-        trades = prices_all[[symbol, ]]  # only portfolio symbols
-        trades_SPY = prices_all["SPY"]  # only SPY, for comparison later  		  	   		  		 			  		 			 	 	 		 		 	
-        trades.values[:, :] = 0  # set them all to nothing  		  	   		  		 			  		 			 	 	 		 		 	
-        trades.values[0, :] = 1000  # add a BUY at the start  		  	   		  		 			  		 			 	 	 		 		 	
-        trades.values[40, :] = -1000  # add a SELL  		  	   		  		 			  		 			 	 	 		 		 	
-        trades.values[41, :] = 1000  # add a BUY  		  	   		  		 			  		 			 	 	 		 		 	
-        trades.values[60, :] = -2000  # go short from long  		  	   		  		 			  		 			 	 	 		 		 	
-        trades.values[61, :] = 2000  # go long from short  		  	   		  		 			  		 			 	 	 		 		 	
-        trades.values[-1, :] = -1000  # exit on the last day  		  	   		  		 			  		 			 	 	 		 		 	
-        if self.verbose:
-            print(type(trades))  # it better be a DataFrame!  		  	   		  		 			  		 			 	 	 		 		 	
-        if self.verbose:
-            print(trades)
-        if self.verbose:
-            print(prices_all)
+        prices_all = ut.get_data(syms, dates)
+        prices = prices_all[syms]
+        trades = prices_all[syms].copy()
+        trades.loc[:] = 0
+
+        sma, macd, cci = get_indicators(prices)
+
+        inds = pd.concat((sma, macd, cci), axis=1)
+        inds.fillna(0, inplace=True)
+        testX = inds.values
+
+        testY = self.learner.query(testX)
+
+        flag = 0
+        for i in range(0, prices.shape[0] - 1):
+            if flag == 0:
+                if testY[i] > 0:
+                    trades.values[i, :] = 1000
+                    flag = 1
+                elif testY[i] < 0:
+                    trades.values[i, :] = -1000
+                    flag = -1
+
+            elif flag == 1:
+                if testY[i] < 0:
+                    trades.values[i, :] = -2000
+                    flag = -1
+                elif testY[i] == 0:
+                    trades.values[i, :] = -1000
+                    flag = 0
+
+            else:
+                if testY[i] > 0:
+                    trades.values[i, :] = 2000
+                    flag = 1
+                elif testY[i] == 0:
+                    trades.values[i, :] = 1000
+                    flag = 0
+
+        if flag == -1:
+            trades.values[prices.shape[0] - 1, :] = 1000
+        elif flag == 1:
+            trades.values[prices.shape[0] - 1, :] = -1000
+
         return trades
 
 
@@ -149,5 +189,43 @@ def author():
     return 'jpb6'  # replace tb34 with your Georgia Tech username.
 
 
+def get_indicators(prices):
+    macd = indicators.macd(prices, 12, 36, 10)
+    cci = indicators.cci(prices, 14)
+    sma = indicators.sma(prices, 24)
+    sma.rename(columns={sma.columns[0]: symbol}, inplace=True)
+
+    cci = (cci > 100) * 1
+    macd = (macd['macd'] < macd['signal']) * 1
+    sma = (prices > sma) * 1
+    sma.rename(columns={sma.columns[0]: 'mean'}, inplace=True)
+
+    return sma, macd, cci
+
 if __name__ == "__main__":
-    print("One does not simply think up a strategy")
+    start_date = dt.datetime(2008, 1, 1)
+    end_date = dt.datetime(2009, 12, 30)
+    symbol = "JPM"
+    learner = StrategyLearner(verbose=True, impact=0.000)
+    learner.add_evidence(symbol=symbol, sd=start_date, ed=end_date, sv=100000)
+    trades = learner.testPolicy(symbol=symbol, sd=dt.datetime(2010, 1, 1), ed=dt.datetime(2011, 12, 31), sv=100000)
+
+    portvals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
+    crManual = (portvals[-1] / portvals[0]) - 1
+    drManual = (portvals[1:] / portvals.shift(1)) - 1
+    std_drManual = drManual.std()
+    mean_drManual = drManual.mean()
+    norm = portvals / portvals[0]
+
+    f = plt.figure()
+    f.set_figwidth(10)
+    f.set_figheight(7)
+    plt.plot(norm, label="BagLearner Strategy", color="red")
+    plt.grid(linestyle="--")
+    plt.legend(loc="best")
+    plt.title("BagLearner Normalized Portfolio Values")
+    plt.xlabel("Date")
+    plt.ylabel("Normalized Value ($)")
+    plt.savefig("BagLearnerTest.png")
+    plt.clf()
+    plt.close(f)
