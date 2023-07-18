@@ -90,7 +90,7 @@ class StrategyLearner(object):
         prices_all = ut.get_data(syms, dates)
         prices = prices_all[syms]
 
-        sma, macd, cci = get_indicators(prices)
+        sma, macd, cci = get_indicators(prices, symbol)
 
         inds = pd.concat((sma, macd, cci), axis=1)
         inds.fillna(0, inplace=True)
@@ -143,7 +143,7 @@ class StrategyLearner(object):
         trades = prices_all[syms].copy()
         trades.loc[:] = 0
 
-        sma, macd, cci = get_indicators(prices)
+        sma, macd, cci = get_indicators(prices, symbol)
 
         inds = pd.concat((sma, macd, cci), axis=1)
         inds.fillna(0, inplace=True)
@@ -189,7 +189,7 @@ def author():
     return 'jpb6'  # replace tb34 with your Georgia Tech username.
 
 
-def get_indicators(prices):
+def get_indicators(prices, symbol):
     macd = indicators.macd(prices, 12, 36, 10)
     cci = indicators.cci(prices, 14)
     sma = indicators.sma(prices, 24)
@@ -203,18 +203,18 @@ def get_indicators(prices):
     return sma, macd, cci
 
 if __name__ == "__main__":
-    start_date = dt.datetime(2008, 1, 1)
-    end_date = dt.datetime(2009, 12, 30)
+    start_date = dt.datetime(2010, 1, 1)
+    end_date = dt.datetime(2011, 12, 30)
     symbol = "JPM"
     learner = StrategyLearner(verbose=True, impact=0.000)
     learner.add_evidence(symbol=symbol, sd=start_date, ed=end_date, sv=100000)
     trades = learner.testPolicy(symbol=symbol, sd=dt.datetime(2010, 1, 1), ed=dt.datetime(2011, 12, 31), sv=100000)
 
     portvals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
-    crManual = (portvals[-1] / portvals[0]) - 1
-    drManual = (portvals[1:] / portvals.shift(1)) - 1
-    std_drManual = drManual.std()
-    mean_drManual = drManual.mean()
+    cr = (portvals[-1] / portvals[0]) - 1
+    dr = (portvals[1:] / portvals.shift(1)) - 1
+    std_dr = dr.std()
+    mean_dr= dr.mean()
     norm = portvals / portvals[0]
 
     f = plt.figure()
