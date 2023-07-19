@@ -83,28 +83,28 @@ class StrategyLearner(object):
         :param sv: The starting value of the portfolio  		  	   		  		 			  		 			 	 	 		 		 	
         :type sv: int  		  	   		  		 			  		 			 	 	 		 		 	
         """
-        prices_all = ut.get_data([symbol], pd.date_range(sd, ed))
-        prices = prices_all[[symbol]]
+        prices = get_prices(symbol, sd, ed)
 
         sma, macd, cci = get_indicators(prices, symbol)
 
         inds = pd.concat((sma, macd, cci), axis=1)[:-5]
         inds.fillna(0, inplace=True)
-        x = inds.values
 
         y = []
-        for i in range(prices.shape[0] - 5):
-            ratio = (prices.ix[i + 5, symbol] - prices.ix[i, symbol]) / prices.ix[i, symbol]
-            if ratio > (0.02 + self.impact):
+        lookahead = 5
+        for idx in range(prices.shape[0] - lookahead):
+            num = prices.ix[idx + lookahead, symbol] - prices.ix[idx, symbol]
+            denom = prices.ix[idx, symbol]
+            ratio = num / denom
+
+            if ratio > (0.025):
                 y.append(1)
-            elif ratio < (-0.02 - self.impact):
+            elif ratio < (-0.025):
                 y.append(-1)
             else:
                 y.append(0)
 
-        y = np.array(y)
-
-        self.learner.add_evidence(x, y)
+        self.learner.add_evidence(inds.values, np.array(y))
 
     def testPolicy(
             self,
@@ -131,49 +131,42 @@ class StrategyLearner(object):
         :rtype: pandas.DataFrame  		  	   		  		 			  		 			 	 	 		 		 	
         """
 
-        prices_all = ut.get_data([symbol], pd.date_range(sd, ed))
-        prices = prices_all[[symbol]]
-        trades = prices_all[[symbol]].copy(deep=True)
+        prices = get_prices(symbol, sd, ed)
+        trades = prices[[symbol]].copy(deep=True)
         trades.loc[:] = 0
 
         sma, macd, cci = get_indicators(prices, symbol)
 
         inds = pd.concat((sma, macd, cci), axis=1)
         inds.fillna(0, inplace=True)
-        x = inds.values
 
-        y = self.learner.query(x)
+        y = self.learner.query(inds.values)
 
         position = 0
-        for i in range(0, prices.shape[0] - 1):
-            if position == 0:
-                if y[i] > 0:
-                    trades.values[i, :] = 1000
-                    position = 1
-                elif y[i] < 0:
-                    trades.values[i, :] = -1000
+        for idx in range(prices.shape[0]):
+            if position == 1:
+                if y[idx] < 0:
+                    trades.values[idx, :] = -2000
                     position = -1
+                elif y[idx] == 0:
+                    trades.values[idx, :] = -1000
+                    position = 0
 
-            elif position == 1:
-                if y[i] < 0:
-                    trades.values[i, :] = -2000
-                    position = -1
-                elif y[i] == 0:
-                    trades.values[i, :] = -1000
+            elif position == -1:
+                if y[idx] > 0:
+                    trades.values[idx, :] = 2000
+                    position = 1
+                elif y[idx] == 0:
+                    trades.values[idx, :] = 1000
                     position = 0
 
             else:
-                if y[i] > 0:
-                    trades.values[i, :] = 2000
+                if y[idx] > 0:
+                    trades.values[idx, :] = 1000
                     position = 1
-                elif y[i] == 0:
-                    trades.values[i, :] = 1000
-                    position = 0
-
-        if position == -1:
-            trades.values[prices.shape[0] - 1, :] = 1000
-        elif position == 1:
-            trades.values[prices.shape[0] - 1, :] = -1000
+                elif y[idx] < 0:
+                    trades.values[idx, :] = -1000
+                    position = -1
 
         return trades
 
@@ -188,6 +181,11 @@ def get_indicators(prices, symbol):
     sma = indicators.sma(prices, 24)
 
     return sma, macd, cci
+
+def get_prices(symbol, sd, ed):
+    prices_all = ut.get_data([symbol], pd.date_range(sd, ed))
+    return prices_all[[symbol]]
+
 
 if __name__ == "__main__":
     start_date = dt.datetime(2008, 1, 1)

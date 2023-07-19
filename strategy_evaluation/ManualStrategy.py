@@ -58,27 +58,26 @@ def manualStrategy(symbol, start_date, end_date, starting_value):
 
         final_vote = macd_vote + cci_vote + sma_vote
         if holdings == 0:
-            if final_vote >= 3:
+            if final_vote >= 2:
                 trades.loc[date] = 1000
                 long.append(date)
                 holdings = 1000
-            elif final_vote <= -3:
+            elif final_vote <= -2:
                 trades.loc[date] = -1000
                 short.append(date)
                 holdings = -1000
         elif holdings == 1000:
-            if final_vote <= -3:
+            if final_vote <= -2:
                 trades.loc[date] = -2000
                 short.append(date)
                 holdings = -1000
         elif holdings == -1000:
-            if final_vote >= 3:
+            if final_vote >= 2:
                 trades.loc[date] = 2000
                 long.append(date)
                 holdings = 1000
 
     return trades, long, short
-
 
 def inSample():
     start_date = dt.datetime(2008, 1, 1)
