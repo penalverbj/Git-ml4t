@@ -23,7 +23,7 @@ def manualStrategy(symbol, start_date, end_date, starting_value):
     dates = trades.index
 
     macd = indicators.macd(prices, 12, 36, 10)
-    cci = indicators.cci(prices, 14)
+    cci = indicators.cci(prices, 14, symbol)
     sma = indicators.sma(prices, 24)
 
     short = []

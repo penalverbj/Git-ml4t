@@ -33,8 +33,6 @@ GT ID: 903376324 (replace with your GT ID)
 """
 
 import datetime as dt
-import random
-import QLearner as q
 import pandas as pd
 import util as ut
 import indicators
@@ -85,31 +83,28 @@ class StrategyLearner(object):
         :param sv: The starting value of the portfolio  		  	   		  		 			  		 			 	 	 		 		 	
         :type sv: int  		  	   		  		 			  		 			 	 	 		 		 	
         """
-        syms = [symbol]
-        dates = pd.date_range(sd, ed)
-        prices_all = ut.get_data(syms, dates)
-        prices = prices_all[syms]
+        prices_all = ut.get_data([symbol], pd.date_range(sd, ed))
+        prices = prices_all[[symbol]]
 
         sma, macd, cci = get_indicators(prices, symbol)
 
-        inds = pd.concat((sma, macd, cci), axis=1)
+        inds = pd.concat((sma, macd, cci), axis=1)[:-5]
         inds.fillna(0, inplace=True)
-        inds = inds[:-5]
-        trainX = inds.values
+        x = inds.values
 
-        trainY = []
+        y = []
         for i in range(prices.shape[0] - 5):
             ratio = (prices.ix[i + 5, symbol] - prices.ix[i, symbol]) / prices.ix[i, symbol]
             if ratio > (0.02 + self.impact):
-                trainY.append(1)
+                y.append(1)
             elif ratio < (-0.02 - self.impact):
-                trainY.append(-1)
+                y.append(-1)
             else:
-                trainY.append(0)
+                y.append(0)
 
-        trainY = np.array(trainY)
+        y = np.array(y)
 
-        self.learner.add_evidence(trainX, trainY)
+        self.learner.add_evidence(x, y)
 
     def testPolicy(
             self,
@@ -136,50 +131,48 @@ class StrategyLearner(object):
         :rtype: pandas.DataFrame  		  	   		  		 			  		 			 	 	 		 		 	
         """
 
-        syms = [symbol]
-        dates = pd.date_range(sd, ed)
-        prices_all = ut.get_data(syms, dates)
-        prices = prices_all[syms]
-        trades = prices_all[syms].copy()
+        prices_all = ut.get_data([symbol], pd.date_range(sd, ed))
+        prices = prices_all[[symbol]]
+        trades = prices_all[[symbol]].copy(deep=True)
         trades.loc[:] = 0
 
         sma, macd, cci = get_indicators(prices, symbol)
 
         inds = pd.concat((sma, macd, cci), axis=1)
         inds.fillna(0, inplace=True)
-        testX = inds.values
+        x = inds.values
 
-        testY = self.learner.query(testX)
+        y = self.learner.query(x)
 
-        flag = 0
+        position = 0
         for i in range(0, prices.shape[0] - 1):
-            if flag == 0:
-                if testY[i] > 0:
+            if position == 0:
+                if y[i] > 0:
                     trades.values[i, :] = 1000
-                    flag = 1
-                elif testY[i] < 0:
+                    position = 1
+                elif y[i] < 0:
                     trades.values[i, :] = -1000
-                    flag = -1
+                    position = -1
 
-            elif flag == 1:
-                if testY[i] < 0:
+            elif position == 1:
+                if y[i] < 0:
                     trades.values[i, :] = -2000
-                    flag = -1
-                elif testY[i] == 0:
+                    position = -1
+                elif y[i] == 0:
                     trades.values[i, :] = -1000
-                    flag = 0
+                    position = 0
 
             else:
-                if testY[i] > 0:
+                if y[i] > 0:
                     trades.values[i, :] = 2000
-                    flag = 1
-                elif testY[i] == 0:
+                    position = 1
+                elif y[i] == 0:
                     trades.values[i, :] = 1000
-                    flag = 0
+                    position = 0
 
-        if flag == -1:
+        if position == -1:
             trades.values[prices.shape[0] - 1, :] = 1000
-        elif flag == 1:
+        elif position == 1:
             trades.values[prices.shape[0] - 1, :] = -1000
 
         return trades
@@ -191,7 +184,7 @@ def author():
 
 def get_indicators(prices, symbol):
     macd = indicators.macd(prices, 12, 36, 10)
-    cci = indicators.cci(prices, 14)
+    cci = indicators.cci(prices, 14, symbol)
     sma = indicators.sma(prices, 24)
     sma.rename(columns={sma.columns[0]: symbol}, inplace=True)
 
