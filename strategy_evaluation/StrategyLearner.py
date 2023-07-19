@@ -2,7 +2,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from strategy_evaluation import marketsimcode
+import marketsimcode
 
 """  		  	   		  		 			  		 			 	 	 		 		 	
 Template for implementing StrategyLearner  (c) 2016 Tucker Balch  		  	   		  		 			  		 			 	 	 		 		 	
