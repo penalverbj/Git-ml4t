@@ -186,12 +186,6 @@ def get_indicators(prices, symbol):
     macd = indicators.macd(prices, 12, 36, 10)
     cci = indicators.cci(prices, 14, symbol)
     sma = indicators.sma(prices, 24)
-    sma.rename(columns={sma.columns[0]: symbol}, inplace=True)
-
-    cci = (cci > 100) * 1
-    macd = (macd['macd'] < macd['signal']) * 1
-    sma = (prices > sma) * 1
-    sma.rename(columns={sma.columns[0]: 'mean'}, inplace=True)
 
     return sma, macd, cci
 
