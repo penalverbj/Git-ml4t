@@ -16,7 +16,7 @@ def inSample():
     end_date = dt.datetime(2009, 12, 30)
     symbols = ["JPM"]
     trades, long, short = ManualStrategy.manualStrategy(symbols, start_date, end_date, starting_value=100000)
-    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
+    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=0.005, commission=9.95)
     crManual = (manualPortVals[-1] / manualPortVals[0]) - 1
     drManual = (manualPortVals[1:] / manualPortVals.shift(1)) - 1
     std_drManual = drManual.std()
@@ -33,11 +33,11 @@ def inSample():
     mean_drBenchmark = drBenchmark.mean()
     benchmarkNorm = benchmarkPortVals / benchmarkPortVals.iloc[0]
 
-    learner = StrategyLearner.StrategyLearner(verbose=True, impact=0.000)
+    learner = StrategyLearner.StrategyLearner(verbose=True, impact=0.005)
     learner.add_evidence(symbol='JPM', sd=start_date, ed=end_date, sv=100000)
     trades = learner.testPolicy(symbol='JPM', sd=start_date, ed=end_date, sv=100000)
 
-    portvals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
+    portvals = marketsimcode.compute_portvals(orders_df=trades, impact=0.005, commission=9.95)
     cr = (portvals[-1] / portvals[0]) - 1
     dr = (portvals[1:] / portvals.shift(1)) - 1
     std_dr = dr.std()
@@ -76,7 +76,7 @@ def outSample():
     end_date = dt.datetime(2011, 12, 30)
     symbols = ["JPM"]
     trades, long, short = ManualStrategy.manualStrategy(symbols, start_date, end_date, starting_value=100000)
-    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
+    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=0.005, commission=9.95)
     crManual = (manualPortVals[-1] / manualPortVals[0]) - 1
     drManual = (manualPortVals[1:] / manualPortVals.shift(1)) - 1
     std_drManual = drManual.std()
@@ -93,11 +93,11 @@ def outSample():
     mean_drBenchmark = drBenchmark.mean()
     benchmarkNorm = benchmarkPortVals / benchmarkPortVals.iloc[0]
 
-    learner = StrategyLearner.StrategyLearner(verbose=True, impact=0.000)
+    learner = StrategyLearner.StrategyLearner(verbose=True, impact=0.005)
     learner.add_evidence(symbol='JPM', sd=dt.datetime(2008, 1, 1), ed=dt.datetime(2009, 12, 30), sv=100000)
     trades = learner.testPolicy(symbol='JPM', sd=start_date, ed=end_date, sv=100000)
 
-    portvals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
+    portvals = marketsimcode.compute_portvals(orders_df=trades, impact=0.005, commission=9.95)
     cr = (portvals[-1] / portvals[0]) - 1
     dr = (portvals[1:] / portvals.shift(1)) - 1
     std_dr = dr.std()
@@ -130,7 +130,9 @@ def outSample():
     plt.clf()
     plt.close(f)
 
+def experiment1():
+    inSample()
+    outSample()
 
 if __name__ == "__main__":
-    # inSample()
-    outSample()
+    experiment1()

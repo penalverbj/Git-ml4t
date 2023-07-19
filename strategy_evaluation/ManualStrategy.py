@@ -85,7 +85,7 @@ def inSample():
     end_date = dt.datetime(2009, 12, 30)
     symbols = ["JPM"]
     trades, long, short = manualStrategy(symbols, start_date, end_date, starting_value=100000)
-    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
+    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=0.005, commission=9.95)
     crManual = (manualPortVals[-1] / manualPortVals[0]) - 1
     drManual = (manualPortVals[1:] / manualPortVals.shift(1)) - 1
     std_drManual = drManual.std()
@@ -136,7 +136,7 @@ def outSample():
     symbols = ["JPM"]
     trades, long, short = manualStrategy(symbols, start_date, end_date, starting_value=100000)
 
-    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=9.95, commission=0.005)
+    manualPortVals = marketsimcode.compute_portvals(orders_df=trades, impact=0.005, commission=9.95)
     crManual = (manualPortVals[-1] / manualPortVals[0]) - 1
     drManual = (manualPortVals[1:] / manualPortVals.shift(1)) - 1
     std_drManual = drManual.std()

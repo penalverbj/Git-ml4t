@@ -203,8 +203,8 @@ def get_indicators(prices, symbol):
     return sma, macd, cci
 
 if __name__ == "__main__":
-    start_date = dt.datetime(2010, 1, 1)
-    end_date = dt.datetime(2011, 12, 30)
+    start_date = dt.datetime(2008, 1, 1)
+    end_date = dt.datetime(2009, 12, 30)
     symbol = "JPM"
     learner = StrategyLearner(verbose=True, impact=0.000)
     learner.add_evidence(symbol=symbol, sd=start_date, ed=end_date, sv=100000)
